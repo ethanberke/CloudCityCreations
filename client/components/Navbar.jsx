@@ -9,7 +9,6 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
@@ -19,7 +18,8 @@ import { ColorModeContext } from "./DarkMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { useTheme } from "@mui/material/styles";
-
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 
 const pages = ['Recipes', 'Contribute', 'About'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -86,103 +86,47 @@ function TADS_AppBar() {
             }}
           >
             Cloud City Creations
-          </Typography>
-
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          </Typography> 
           <Typography
-            variant="h5"
+            variant="h6"
             noWrap
             component="a"
             href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
+              fontFamily: 'serif',
               fontWeight: 700,
               letterSpacing: '.3rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            TADS Recipes
+            Cloud City Creations
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: "right" }}>
-            {/* {pages.map((page) => (
-              // <Button
-              //   key={page}
-              //   onClick={handleCloseNavMenu}
-              //   sx={{ my: 2, color: 'white', display: 'block' }}
-              // >
-              //   {page}
-              // </Button>
-            ))} */}
-            {/* <Button
-              component={Link}
-              to="/"
-              color="inherit"
-              sx={{ textTransform: "none", fontSize: "1rem"}}
+            <Fab 
+            color="primary" 
+            aria-label="add"
+            size="medium"
+            component={Link}
+            to="/contribute"
+            sx={{ mr: 1 }}
             >
-              Home
-            </Button>
-            <Button
-              component={Link}
-              to="/recipes"
-              color="inherit"
-              sx={{ textTransform: "none", fontSize: "1rem"}}
+              <AddIcon />
+            </Fab>
+          </Box>
+                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: "right" }}>
+            <Fab 
+            color="primary" 
+            aria-label="add"
+            size="medium"
+            component={Link}
+            to="/contribute"
+            sx={{ mr: 1 }}
             >
-              Recipes
-            </Button> */}
-            <Button
-              component={Link}
-              to="/contribute"
-              color="inherit"
-              sx={{ textTransform: "none", fontSize: "1rem"}}
-            >
-              Contribute
-            </Button>
-            {/* <Button
-              component={Link}
-              to="/about"
-              color="inherit"
-              sx={{ textTransform: "none", fontSize: "1rem"}}
-            >
-              About
-            </Button> */}
+              <AddIcon />
+            </Fab>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
               <IconButton onClick={colorMode.toggleColorMode} color="inherit">

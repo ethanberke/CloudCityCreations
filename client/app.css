@@ -76,21 +76,6 @@ button:hover {
   margin-bottom: 10px;
 }
 
-.contribute {
-display:flex;
-flex-direction:column;
-background-color: rgb(212, 212, 212);
-padding: 20px;
-text-align:center;
-margin-bottom: 50px;
-}
-
-.contribute input {
-  justify-content: center;
-  width: 87%;
-  height: 26px;
-}
-
 .recipe br { 
   /* recipe break */
   margin-top: 12px;

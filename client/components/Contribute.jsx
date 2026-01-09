@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
 
 const Contribute = ({ onRecipeSubmit }) => {
   const [newRecipe, setNewRecipe] = useState({
@@ -50,95 +55,95 @@ const Contribute = ({ onRecipeSubmit }) => {
 
   return (
     
-    <div className="contribute">
-      <h3>Contribute a Recipe</h3>
+    <Box className="contribute"
+    component="form"
+    sx={{ display:"flex", justifyContent:"center", '& > :not(style)': { m: 1, width: '25ch' } }}
+    autoComplete="off"
+    >
+      <Typography>Contribute a Recipe</Typography>
       <form onSubmit={handleSubmit}>
-      <label>
-        Contributor:
-        <input
-          type="text"
+        <TextField
+          sx={{ width: '50ch', margin: '10px 0' }}
           name="contributor"
+          label="Contibutor Name*"
+          variant="filled"
           value={newRecipe.contributor}
           onChange={(e) => setNewRecipe({ ...newRecipe, contributor: e.target.value })}
         />
-      </label>
-      <br />
-      <br />
-        <label>
-          Recipe Name:
-          <input
-            type="text"
-            name="recipe_name"
-            value={newRecipe.recipe_name}
-            onChange={(e) => setNewRecipe({ ...newRecipe, recipe_name: e.target.value })}
-          />
-        </label>
-        <br />
-        <br />
-        <label>
-          Style/Nationality:
-          <input
-            type="text"
-            name="style"
-            value={newRecipe.style}
-            onChange={(e) => setNewRecipe({ ...newRecipe, style: e.target.value })}
-          />
-        </label>
-        <br />
-        <br />
 
-        <label>
-          Image URL (optional):
-          <input
-            type="text"
-            name="image_url"
-            value={newRecipe.image_url}
-            onChange={(e) => setNewRecipe({ ...newRecipe, image_url: e.target.value })}
+        <TextField
+          sx={{ width: '50ch', margin: '10px 0' }}
+          name="recipe_name"
+          label="Recipe Title*"
+          variant="filled"
+          value={newRecipe.recipe_name}
+          onChange={(e) => setNewRecipe({ ...newRecipe, recipe_name: e.target.value })}
+        />
+        <TextField
+          sx={{ width: '50ch', margin: '10px 0' }}
+          name="style"
+          label="Style* (e.g., Dessert, Appetizer)"
+          variant="filled"
+          value={newRecipe.style}
+          onChange={(e) => setNewRecipe({ ...newRecipe, style: e.target.value })}
+        />
+        <TextField
+          sx={{ width: '50ch', margin: '10px 0' }}
+          name="image_url"
+          label="Image URL"
+          variant="filled"
+          value={newRecipe.image_url}
+          onChange={(e) => setNewRecipe({ ...newRecipe, image_url: e.target.value })}
+        />
+      {newRecipe.ingredients.map((ingredient, index) => (
+        <Box key={index}>
+          <TextField
+            value={ingredient}
+            onChange={(e) => handleIngredientChange(e, index)}
+            sx={{ width: '50ch', margin: '10px 0' }}
+            variant="filled"
+            multiline
+            label={`Ingredient ${index+1}*`}
+
           />
-        </label>
-        <br />
-
-        <h4>Ingredients:</h4>
-        {newRecipe.ingredients.map((ingredient, index) => (
-          <div key={index}>
-            <textarea
-              value={ingredient}
-              onChange={(e) => handleIngredientChange(e, index)}
-              rows={2}
-              cols={50}
-            />
-          </div>
-        ))}
-        <button type="button" onClick={handleAddIngredient}>
-          Add Ingredient
-        </button>
-        <br />
-
-        <h4>Instructions:</h4>
+        </Box>
+      ))}
+      <Button 
+      variant="contained"
+      sx={{ margin: '10px 0' }}
+      onClick={handleAddIngredient}>
+        Add Ingredient
+      </Button>
         {newRecipe.instructions.map((instruction, index) => (
-          <div key={index}>
-            <textarea
+          <Box key={index}>
+            <TextField
               value={instruction}
-              onChange={(e) => handleInstructionChange(e, index)}
-              rows={5}
-              cols={50} 
+              onChange={(e) => handleInstructionChange(e, index)} 
+              sx={{ width: '50ch', margin: '10px 0' }}
+              variant="filled"
+              multiline
+              label={`Instruction Step ${index+1}*`}
+              rows={4}
             />
-          </div>
+          </Box>
         ))}
         
-        <button type="button" onClick={handleAddInstruction}>
+        <Button 
+        variant="contained"
+        sx={{ margin: '10px 0' }}
+        onClick={handleAddInstruction}
+        >
           Add Instruction
-        </button>
-        <br />
-        <br />
-        <br />
-        <button type="submit">Submit Recipe</button>
-        <br />
-        <br />
-        <br />
-        <br />
+        </Button>
+        <Button 
+        variant="contained"
+        sx={{ margin: '10px 0' }}
+        type="submit"
+        >
+          Submit Recipe
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 };
 
