@@ -57,11 +57,20 @@ const Contribute = ({ onRecipeSubmit }) => {
     
     <Box className="contribute"
     component="form"
-    sx={{ display:"flex", justifyContent:"center", '& > :not(style)': { m: 1, width: '25ch' } }}
-    autoComplete="off"
+    onSubmit={handleSubmit}
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      autoComplete: "off"
+    }}
     >
-      <Typography>Contribute a Recipe</Typography>
-      <form onSubmit={handleSubmit}>
+      <Typography 
+        variant="h4"
+        sx={{ width: '50ch', textAlign: 'center', marginTop: 2}}
+      >
+        Contribute a Recipe
+      </Typography>
         <TextField
           sx={{ width: '50ch', margin: '10px 0' }}
           name="contributor"
@@ -142,7 +151,6 @@ const Contribute = ({ onRecipeSubmit }) => {
         >
           Submit Recipe
         </Button>
-      </form>
     </Box>
   );
 };

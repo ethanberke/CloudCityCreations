@@ -19,7 +19,7 @@ body {
   font-weight: 600
 }
 
-.recipe {
+/* .recipe {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +29,7 @@ body {
   text-align: center;
   background-color: rgb(212, 212, 212);
 
-}
+} */
 
 select {
   padding: 8px;
