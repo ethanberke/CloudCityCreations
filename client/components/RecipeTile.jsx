@@ -7,7 +7,13 @@ import {
   CardMedia,
   CardActionArea,
   Typography,
-  Modal
+  Modal,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 
 export default function RecipeTile() {
@@ -36,7 +42,7 @@ export default function RecipeTile() {
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
         {recipes.map((recipe) => (
-          <Grid item xs={12} sm={6} md={3} key={recipe.id}>
+          <Grid size={{xs: 12, sm: 6, md: 4}} key={recipe.id}>
             <Card onClick={() => handleOpen(recipe)}>
               <CardActionArea>
                 <CardMedia
@@ -60,26 +66,49 @@ export default function RecipeTile() {
         <Box
           sx={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
+            width: "80%",
             bgcolor: "background.paper",
+            maxHeight: "80vh",
+            overflowY: "auto",
             boxShadow: 24,
             p: 2
           }}
         >
           {selectedRecipe && (
             <>
+            <Typography variant="h5" mt={2}>
+              {selectedRecipe.recipe_name}
+              {selectedRecipe.contributor}
+              {selectedRecipe.style}
+            </Typography>
               <CardMedia
                 component="img"
                 height="200"
                 image={selectedRecipe.image_url}
                 alt={selectedRecipe.recipe_name}
               />
-              <Typography variant="h5" mt={2}>
-                {selectedRecipe.recipe_name}
-              </Typography>
+
+            <Typography>Ingredients</Typography>
+            <List>
+              {[...new Map(
+                (selectedRecipe?.ingredients || []).map(i => [i.ingredient, i])
+              ).values()].map((ingredient) => (
+                <ListItem key={ingredient.ingredient}>
+                  <ListItemText primary={ingredient.ingredient} />
+                </ListItem>
+              ))}
+            </List>
+
+            <Typography>Steps</Typography>
+            <List>
+            {[...new Map (
+              (selectedRecipe?.instructions ||[]).map( i => [i.step, i])
+            ).values()].map((instruction) => (
+                <ListItem key={instruction.id}>
+                  <ListItemText primary={instruction.step} />
+                </ListItem>
+              ))}
+            </List>
             </>
           )}
         </Box>
