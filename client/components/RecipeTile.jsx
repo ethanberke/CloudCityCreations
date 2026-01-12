@@ -22,7 +22,7 @@ export default function RecipeTile() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/recipes")
+    fetch(`${import.meta.env.VITE_API_URL}/recipes`)
       .then(res => res.json())
       .then(data => setRecipes(data))
       .catch(err => console.error(err));
@@ -42,13 +42,13 @@ export default function RecipeTile() {
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
         {recipes.map((recipe) => (
-          <Grid size={{xs: 12, sm: 6, md: 4}} key={recipe.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={recipe.id}>
             <Card onClick={() => handleOpen(recipe)}>
               <CardActionArea>
                 <CardMedia
                   component="img"
                   height="150"
-                  image={recipe.image_url}
+                  image={recipe.image_url || "/images/grogu_peak.jpg"}
                   alt={recipe.recipe_name}
                 />
                 <CardContent>
@@ -61,6 +61,7 @@ export default function RecipeTile() {
           </Grid>
         ))}
       </Grid>
+
 
       <Modal open={open} onClose={handleClose}>
         <Box
@@ -82,11 +83,15 @@ export default function RecipeTile() {
               {selectedRecipe.style}
             </Typography>
               <CardMedia
-                component="img"
-                height="200"
-                image={selectedRecipe.image_url}
-                alt={selectedRecipe.recipe_name}
-              />
+              component="img"
+              height="200"
+              image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
+              alt={selectedRecipe.recipe_name}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/grogu_peak.jpg";
+              }}
+            />
 
             <Typography>Ingredients</Typography>
             <List>

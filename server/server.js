@@ -146,41 +146,39 @@ app.get("/api/recipes/:recipe_id", (req, res) => {
     });
 });
 
-//recipes
-app.post("/api/recipes", (req, res) => {
-  const { contributor, recipe_name, style, image_url } = req.body;
-  sql`INSERT INTO recipes(contributor, recipe_name, style, image_url) VALUES (${contributor}, ${recipe_name}, ${style}, ${image_url}) RETURNING *`
-    .then((data) => {
-      res.json(data[0]);
-    })
-    .catch((error) => {
-      console.error("Error creating recipe:", error);
-      res.status(500).json({ error: "Internal server error" });
-    });
-});
-//ingredients
-app.post("/api/ingredients", (req, res) => {
-  const { recipe_id, ingredient } = req.body;
-  sql`INSERT INTO ingredients( recipe_id, ingredient) VALUES (${recipe_id}, ${ingredient}) RETURNING *`
-    .then((data) => {
-      res.json(data[0]);
-    })
-    .catch((error) => {
-      console.error("Error Adding Ingredients:", error);
-      res.status(500).json({ error: "Internal server error" });
-    });
-});
-//instructions
-app.post("/api/instructions", (req, res) => {
-  const { recipe_id, step_order, step } = req.body;
-  sql`INSERT INTO instructions(recipe_id, step_order, step) VALUES (${recipe_id}, ${step_order}, ${step}) RETURNING *`
-    .then((data) => {
-      res.json(data[0]);
-    })
-    .catch((error) => {
-      console.error("Error creating recipe:", error);
-      res.status(500).json({ error: "Internal server error" });
-    });
+app.post("/api/recipes", async (req, res) => {
+  const { contributor, recipe_name, style, image_url, ingredients, instructions } = req.body;
+
+  console.log("BODY:", req.body);
+  try {
+    const recipeResult = await sql`
+      INSERT INTO recipes (contributor, recipe_name, style, image_url)
+      VALUES (${contributor}, ${recipe_name}, ${style}, ${image_url})
+      RETURNING id
+    `;
+
+    const recipe_id = recipeResult[0].id;
+
+    for (const ingredient of ingredients) {
+      await sql`
+        INSERT INTO ingredients (recipe_id, ingredient)
+        VALUES (${recipe_id}, ${ingredient})
+      `;
+    }
+
+    for (let i = 0; i < instructions.length; i++) {
+      await sql`
+        INSERT INTO instructions (recipe_id, step_order, step)
+        VALUES (${recipe_id}, ${i + 1}, ${instructions[i]})
+      `;
+    }
+
+    res.json({ message: "Recipe created", recipe_id });
+
+  } catch (error) {
+    console.error("Error creating recipe:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.listen(PORT, () => {

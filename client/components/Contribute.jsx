@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -6,6 +7,8 @@ import Typography from '@mui/material/Typography';
 
 
 const Contribute = ({ onRecipeSubmit }) => {
+  const navigate = useNavigate();
+
   const [newRecipe, setNewRecipe] = useState({
     contributor: "",
     recipe_name: "",
@@ -41,15 +44,13 @@ const Contribute = ({ onRecipeSubmit }) => {
     setNewRecipe({ ...newRecipe, instructions: updatedInstructions });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const confirm = window.confirm("Are you ready to submit your recipe?")
     if (confirm) {
-      onRecipeSubmit(newRecipe);
-      setTimeout(() => {
+      await onRecipeSubmit(newRecipe);
         alert("Recipe submitted successfully!")
-        window.location.reload();
-      }, 500);
+        navigate("/")
     }
   };
 
@@ -132,7 +133,7 @@ const Contribute = ({ onRecipeSubmit }) => {
               variant="filled"
               multiline
               label={`Instruction Step ${index+1}*`}
-              rows={4}
+              rows={2}
             />
           </Box>
         ))}
