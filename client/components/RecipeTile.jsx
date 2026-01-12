@@ -94,26 +94,26 @@ export default function RecipeTile() {
             />
 
             <Typography>Ingredients</Typography>
-            <List>
+            <List sx={{ listStyleType: 'disc', pl: 4 }}>
               {[...new Map(
                 (selectedRecipe?.ingredients || []).map(i => [i.ingredient, i])
               ).values()].map((ingredient) => (
-                <ListItem key={ingredient.ingredient}>
+                <ListItem sx={{ display: 'list-item' }} key={ingredient.ingredient}>
                   <ListItemText primary={ingredient.ingredient} />
                 </ListItem>
               ))}
             </List>
 
             <Typography>Steps</Typography>
-            <List>
-            {[...new Map (
-              (selectedRecipe?.instructions ||[]).map( i => [i.step, i])
+          <List component="ol" sx={{ listStyleType: "decimal", pl: 4 }}>
+            {[...new Map(
+              (selectedRecipe?.instructions || []).map(i => [i.step_order, i])
             ).values()].map((instruction) => (
-                <ListItem key={instruction.id}>
-                  <ListItemText primary={instruction.step} />
-                </ListItem>
-              ))}
-            </List>
+              <ListItem component="li" key={instruction.id}>
+                <ListItemText primary={instruction.step} sx={{ display: "list-item" }}/>
+              </ListItem>
+            ))}
+          </List>
             </>
           )}
         </Box>
