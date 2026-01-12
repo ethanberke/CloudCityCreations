@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
 const Contribute = ({ onRecipeSubmit }) => {
   const navigate = useNavigate();
@@ -46,112 +45,114 @@ const Contribute = ({ onRecipeSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const confirm = window.confirm("Are you ready to submit your recipe?")
+    const confirm = window.confirm("Are you ready to submit your recipe?");
     if (confirm) {
       await onRecipeSubmit(newRecipe);
-        alert("Recipe submitted successfully!")
-        navigate("/")
+      alert("Recipe submitted successfully!");
+      navigate("/");
     }
   };
 
   return (
-    
-    <Box className="contribute"
-    component="form"
-    onSubmit={handleSubmit}
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      autoComplete: "off"
-    }}
+    <Box
+      className="contribute"
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        autoComplete: "off",
+      }}
     >
-      <Typography 
+      <Typography
         variant="h4"
-        sx={{ width: '50ch', textAlign: 'center', marginTop: 2}}
+        sx={{ width: "50ch", textAlign: "center", marginTop: 2 }}
       >
         Contribute a Recipe
       </Typography>
-        <TextField
-          sx={{ width: '50ch', margin: '10px 0' }}
-          name="contributor"
-          label="Contibutor Name*"
-          variant="filled"
-          value={newRecipe.contributor}
-          onChange={(e) => setNewRecipe({ ...newRecipe, contributor: e.target.value })}
-        />
+      <TextField
+        sx={{ width: "50ch", margin: "10px 0" }}
+        name="contributor"
+        label="Contibutor Name*"
+        variant="filled"
+        value={newRecipe.contributor}
+        onChange={(e) =>
+          setNewRecipe({ ...newRecipe, contributor: e.target.value })
+        }
+      />
 
-        <TextField
-          sx={{ width: '50ch', margin: '10px 0' }}
-          name="recipe_name"
-          label="Recipe Title*"
-          variant="filled"
-          value={newRecipe.recipe_name}
-          onChange={(e) => setNewRecipe({ ...newRecipe, recipe_name: e.target.value })}
-        />
-        <TextField
-          sx={{ width: '50ch', margin: '10px 0' }}
-          name="style"
-          label="Style* (e.g., Dessert, Appetizer)"
-          variant="filled"
-          value={newRecipe.style}
-          onChange={(e) => setNewRecipe({ ...newRecipe, style: e.target.value })}
-        />
-        <TextField
-          sx={{ width: '50ch', margin: '10px 0' }}
-          name="image_url"
-          label="Image URL"
-          variant="filled"
-          value={newRecipe.image_url}
-          onChange={(e) => setNewRecipe({ ...newRecipe, image_url: e.target.value })}
-        />
+      <TextField
+        sx={{ width: "50ch", margin: "10px 0" }}
+        name="recipe_name"
+        label="Recipe Title*"
+        variant="filled"
+        value={newRecipe.recipe_name}
+        onChange={(e) =>
+          setNewRecipe({ ...newRecipe, recipe_name: e.target.value })
+        }
+      />
+      <TextField
+        sx={{ width: "50ch", margin: "10px 0" }}
+        name="style"
+        label="Style* (e.g., Dessert, Appetizer)"
+        variant="filled"
+        value={newRecipe.style}
+        onChange={(e) => setNewRecipe({ ...newRecipe, style: e.target.value })}
+      />
+      <TextField
+        sx={{ width: "50ch", margin: "10px 0" }}
+        name="image_url"
+        label="Image URL"
+        variant="filled"
+        value={newRecipe.image_url}
+        onChange={(e) =>
+          setNewRecipe({ ...newRecipe, image_url: e.target.value })
+        }
+      />
       {newRecipe.ingredients.map((ingredient, index) => (
         <Box key={index}>
           <TextField
             value={ingredient}
             onChange={(e) => handleIngredientChange(e, index)}
-            sx={{ width: '50ch', margin: '10px 0' }}
+            sx={{ width: "50ch", margin: "10px 0" }}
             variant="filled"
             multiline
-            label={`Ingredient ${index+1}*`}
-
+            label={`Ingredient ${index + 1}*`}
           />
         </Box>
       ))}
-      <Button 
-      variant="contained"
-      sx={{ margin: '10px 0' }}
-      onClick={handleAddIngredient}>
+      <Button
+        variant="contained"
+        sx={{ margin: "10px 0" }}
+        onClick={handleAddIngredient}
+      >
         Add Ingredient
       </Button>
-        {newRecipe.instructions.map((instruction, index) => (
-          <Box key={index}>
-            <TextField
-              value={instruction}
-              onChange={(e) => handleInstructionChange(e, index)} 
-              sx={{ width: '50ch', margin: '10px 0' }}
-              variant="filled"
-              multiline
-              label={`Instruction Step ${index+1}*`}
-              rows={2}
-            />
-          </Box>
-        ))}
-        
-        <Button 
+      {newRecipe.instructions.map((instruction, index) => (
+        <Box key={index}>
+          <TextField
+            value={instruction}
+            onChange={(e) => handleInstructionChange(e, index)}
+            sx={{ width: "50ch", margin: "10px 0" }}
+            variant="filled"
+            multiline
+            label={`Instruction Step ${index + 1}*`}
+            rows={2}
+          />
+        </Box>
+      ))}
+
+      <Button
         variant="contained"
-        sx={{ margin: '10px 0' }}
+        sx={{ margin: "10px 0" }}
         onClick={handleAddInstruction}
-        >
-          Add Instruction
-        </Button>
-        <Button 
-        variant="contained"
-        sx={{ margin: '10px 0' }}
-        type="submit"
-        >
-          Submit Recipe
-        </Button>
+      >
+        Add Instruction
+      </Button>
+      <Button variant="contained" sx={{ margin: "10px 0" }} type="submit">
+        Submit Recipe
+      </Button>
     </Box>
   );
 };

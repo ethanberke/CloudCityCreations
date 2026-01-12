@@ -4,7 +4,7 @@ export default function Recipes({ recipes }) {
       <h1>Recipes</h1>
 
       <select>
-        {recipes.map(r => (
+        {recipes.map((r) => (
           <option key={r.id} value={r.id}>
             {r.recipe_name}
           </option>

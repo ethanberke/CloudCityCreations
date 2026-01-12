@@ -1,7 +1,7 @@
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import postgres from "postgres";
-import dotenv from "dotenv";
-import cors from "cors";
 
 dotenv.config({ path: "../.env" });
 console.log("DB URL:", process.env.DATABASE_URL);
@@ -13,9 +13,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static("../client/dist"));
 
-app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  }),
+);
 
 app.get("/api/recipes", (req, res) => {
   sql`
@@ -70,7 +72,11 @@ app.get("/api/recipes", (req, res) => {
         }
 
         if (instruction_id && step_order && step) {
-          recipes[recipe_id].instructions.push({ instruction_id, step_order, step });
+          recipes[recipe_id].instructions.push({
+            instruction_id,
+            step_order,
+            step,
+          });
         }
       });
 
@@ -126,13 +132,29 @@ app.get("/api/recipes/:recipe_id", (req, res) => {
         const seenInstructions = new Set();
 
         data.forEach((row) => {
-          if (row.ingredient_id && row.ingredient && !seenIngredients.has(row.ingredient_id)) {
-            recipeData.ingredients.push({ ingredient_id: row.ingredient_id, ingredient: row.ingredient });
+          if (
+            row.ingredient_id &&
+            row.ingredient &&
+            !seenIngredients.has(row.ingredient_id)
+          ) {
+            recipeData.ingredients.push({
+              ingredient_id: row.ingredient_id,
+              ingredient: row.ingredient,
+            });
             seenIngredients.add(row.ingredient_id);
           }
 
-          if (row.instruction_id && row.step_order && row.step && !seenInstructions.has(row.instruction_id)) {
-            recipeData.instructions.push({ instruction_id: row.instruction_id, step_order: row.step_order, step: row.step });
+          if (
+            row.instruction_id &&
+            row.step_order &&
+            row.step &&
+            !seenInstructions.has(row.instruction_id)
+          ) {
+            recipeData.instructions.push({
+              instruction_id: row.instruction_id,
+              step_order: row.step_order,
+              step: row.step,
+            });
             seenInstructions.add(row.instruction_id);
           }
         });
@@ -147,7 +169,14 @@ app.get("/api/recipes/:recipe_id", (req, res) => {
 });
 
 app.post("/api/recipes", async (req, res) => {
-  const { contributor, recipe_name, style, image_url, ingredients, instructions } = req.body;
+  const {
+    contributor,
+    recipe_name,
+    style,
+    image_url,
+    ingredients,
+    instructions,
+  } = req.body;
 
   console.log("BODY:", req.body);
   try {
@@ -174,7 +203,6 @@ app.post("/api/recipes", async (req, res) => {
     }
 
     res.json({ message: "Recipe created", recipe_id });
-
   } catch (error) {
     console.error("Error creating recipe:", error);
     res.status(500).json({ error: "Internal server error" });

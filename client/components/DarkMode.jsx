@@ -1,5 +1,5 @@
 import { createContext, useMemo, useState } from "react";
-import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
@@ -9,9 +9,9 @@ export default function ThemeWrapper({ children }) {
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () =>
-        setMode(prev => (prev === "light" ? "dark" : "light")),
+        setMode((prev) => (prev === "light" ? "dark" : "light")),
     }),
-    []
+    [],
   );
 
   const theme = useMemo(
@@ -21,7 +21,7 @@ export default function ThemeWrapper({ children }) {
           mode,
         },
       }),
-    [mode]
+    [mode],
   );
 
   return (

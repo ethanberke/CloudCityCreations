@@ -1,9 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Landing from "./components/Landing";
-import RecipesPage from "./pages/RecipesPage";
-import ContributePage from "./pages/ContributePage";
+import Navbar from "./components/Navbar";
 import About from "./pages/About";
+import ContributePage from "./pages/ContributePage";
+import RecipesPage from "./pages/RecipesPage";
 
 export default function App() {
   return (

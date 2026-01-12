@@ -6,9 +6,9 @@ export default function RecipesPage() {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/recipes`)
-      .then(res => res.json())
-      .then(data => setRecipes(data))
-      .catch(err => console.error("Error fetching recipes:", err));
+      .then((res) => res.json())
+      .then((data) => setRecipes(data))
+      .catch((err) => console.error("Error fetching recipes:", err));
   }, []);
 
   return <Recipes recipes={recipes} />;

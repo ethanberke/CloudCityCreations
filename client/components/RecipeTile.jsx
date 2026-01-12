@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import {
   Box,
-  Grid,
   Card,
+  CardActionArea,
   CardContent,
   CardMedia,
-  CardActionArea,
-  Typography,
-  Modal,
-  List,
-  ListItem,
-  ListItemText,
   Dialog,
   DialogContent,
   DialogTitle,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Modal,
+  Typography,
 } from "@mui/material";
 
 export default function RecipeTile() {
@@ -23,9 +23,9 @@ export default function RecipeTile() {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/recipes`)
-      .then(res => res.json())
-      .then(data => setRecipes(data))
-      .catch(err => console.error(err));
+      .then((res) => res.json())
+      .then((data) => setRecipes(data))
+      .catch((err) => console.error(err));
   }, []);
 
   const handleOpen = (recipe) => {
@@ -62,7 +62,6 @@ export default function RecipeTile() {
         ))}
       </Grid>
 
-
       <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
@@ -72,48 +71,64 @@ export default function RecipeTile() {
             maxHeight: "80vh",
             overflowY: "auto",
             boxShadow: 24,
-            p: 2
+            p: 2,
           }}
         >
           {selectedRecipe && (
             <>
-            <Typography variant="h5" mt={2}>
-              {selectedRecipe.recipe_name}
-              {selectedRecipe.contributor}
-              {selectedRecipe.style}
-            </Typography>
+              <Typography variant="h5" mt={2}>
+                {selectedRecipe.recipe_name}
+                {selectedRecipe.contributor}
+                {selectedRecipe.style}
+              </Typography>
               <CardMedia
-              component="img"
-              height="200"
-              image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
-              alt={selectedRecipe.recipe_name}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/images/grogu_peak.jpg";
-              }}
-            />
+                component="img"
+                height="200"
+                image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
+                alt={selectedRecipe.recipe_name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/images/grogu_peak.jpg";
+                }}
+              />
 
-            <Typography>Ingredients</Typography>
-            <List sx={{ listStyleType: 'disc', pl: 4 }}>
-              {[...new Map(
-                (selectedRecipe?.ingredients || []).map(i => [i.ingredient, i])
-              ).values()].map((ingredient) => (
-                <ListItem sx={{ display: 'list-item' }} key={ingredient.ingredient}>
-                  <ListItemText primary={ingredient.ingredient} />
-                </ListItem>
-              ))}
-            </List>
+              <Typography>Ingredients</Typography>
+              <List sx={{ listStyleType: "disc", pl: 4 }}>
+                {[
+                  ...new Map(
+                    (selectedRecipe?.ingredients || []).map((i) => [
+                      i.ingredient,
+                      i,
+                    ]),
+                  ).values(),
+                ].map((ingredient) => (
+                  <ListItem
+                    sx={{ display: "list-item" }}
+                    key={ingredient.ingredient}
+                  >
+                    <ListItemText primary={ingredient.ingredient} />
+                  </ListItem>
+                ))}
+              </List>
 
-            <Typography>Steps</Typography>
-          <List component="ol" sx={{ listStyleType: "decimal", pl: 4 }}>
-            {[...new Map(
-              (selectedRecipe?.instructions || []).map(i => [i.step_order, i])
-            ).values()].map((instruction) => (
-              <ListItem component="li" key={instruction.id}>
-                <ListItemText primary={instruction.step} sx={{ display: "list-item" }}/>
-              </ListItem>
-            ))}
-          </List>
+              <Typography>Steps</Typography>
+              <List component="ol" sx={{ listStyleType: "decimal", pl: 4 }}>
+                {[
+                  ...new Map(
+                    (selectedRecipe?.instructions || []).map((i) => [
+                      i.step_order,
+                      i,
+                    ]),
+                  ).values(),
+                ].map((instruction) => (
+                  <ListItem component="li" key={instruction.id}>
+                    <ListItemText
+                      primary={instruction.step}
+                      sx={{ display: "list-item" }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             </>
           )}
         </Box>
