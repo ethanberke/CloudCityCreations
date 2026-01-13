@@ -124,7 +124,7 @@ const Contribute = ({ onRecipeSubmit }) => {
       ))}
       <Button
         variant="contained"
-        sx={{ margin: "10px 0" }}
+        sx={{ margin: "10px 0", width: "22ch" }}
         onClick={handleAddIngredient}
       >
         Add Ingredient
@@ -145,12 +145,12 @@ const Contribute = ({ onRecipeSubmit }) => {
 
       <Button
         variant="contained"
-        sx={{ margin: "10px 0" }}
+        sx={{ margin: "10px 0", width: "22ch" }}
         onClick={handleAddInstruction}
       >
         Add Instruction
       </Button>
-      <Button variant="contained" sx={{ margin: "10px 0" }} type="submit">
+      <Button variant="contained" sx={{ margin: "10px 0", width: "22ch" }} type="submit">
         Submit Recipe
       </Button>
     </Box>
