@@ -10,8 +10,8 @@ import {
   ListItem,
   ListItemText,
   Modal,
-  Typography,
   Paper,
+  Typography,
 } from "@mui/material";
 
 export default function RecipeTile() {
@@ -106,23 +106,23 @@ export default function RecipeTile() {
                 </Typography>
               </Box>
               <Paper elevation={8}>
-              <CardMedia
-                component="img"
-                image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
-                alt={selectedRecipe.recipe_name}
-                sx={{
-                  width: "100%",
-                  height: "auto",
-                  maxHeight: 300,
-                  objectFit: "cover",
-                  borderRadius: 2,
-                  my: 2,
-                }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/images/grogu_peak.jpg";
-                }}
-              />
+                <CardMedia
+                  component="img"
+                  image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
+                  alt={selectedRecipe.recipe_name}
+                  sx={{
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: 300,
+                    objectFit: "cover",
+                    borderRadius: 2,
+                    my: 2,
+                  }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/images/grogu_peak.jpg";
+                  }}
+                />
               </Paper>
 
               <Typography>Ingredients</Typography>
