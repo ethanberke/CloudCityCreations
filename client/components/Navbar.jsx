@@ -47,13 +47,14 @@ function TADS_AppBar() {
 
   return (
     <AppBar position="static">
-      <Container maxWidth="xl">
+      <Container>
         <Toolbar disableGutters>
           <Box
             component={Link}
             to="/"
             sx={{
               display: "flex",
+              justifyContent: "flex-start",
               alignItems: "center",
               textDecoration: "none",
             }}
@@ -66,6 +67,8 @@ function TADS_AppBar() {
                 height: 30,
                 width: 80,
                 mr: 2,
+                display: "flex",
+                justifyContent: "flex-start",
               }}
             />
           </Box>
@@ -74,7 +77,7 @@ function TADS_AppBar() {
             noWrap
             component={Link}
             to="/"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -85,12 +88,13 @@ function TADS_AppBar() {
               textDecoration: "none",
             }}
           >
-            Cloud City Creations
+            Cloud City Culinary Creations
           </Typography>
           <Typography
             variant="h6"
             noWrap
             component={Link}
+            to="/"
             href="/"
             sx={{
               mr: 2,
@@ -102,45 +106,21 @@ function TADS_AppBar() {
               textDecoration: "none",
             }}
           >
-            Cloud City Creations
+            Cloud City Culinary Creations
           </Typography>
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: { xs: "none", md: "flex" },
-              justifyContent: "right",
-            }}
-          >
+
+          <Box sx={{ flexGrow: 1 }}></Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Fab
               color="primary"
               aria-label="add"
               size="medium"
               component={Link}
               to="/contribute"
-              sx={{ mr: 1 }}
             >
               <AddIcon />
             </Fab>
-          </Box>
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: { xs: "flex", md: "none" },
-              justifyContent: "right",
-            }}
-          >
-            <Fab
-              color="primary"
-              aria-label="add"
-              size="medium"
-              component={Link}
-              to="/contribute"
-              sx={{ mr: 1 }}
-            >
-              <AddIcon />
-            </Fab>
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
+
             <IconButton onClick={colorMode.toggleColorMode} color="inherit">
               {theme.palette.mode === "dark" ? (
                 <LightModeIcon />

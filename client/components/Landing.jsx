@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import RecipeTile from "./RecipeTile";
 
@@ -13,12 +14,17 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="landing">
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Box className="landing" sx={{ padding: 2 }}>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        sx={{ textAlign: "center" }}
+      >
         Your squad’s recipes, all in one place.
       </Typography>
 
       <RecipeTile recipes={recipes} />
-    </div>
+    </Box>
   );
 }

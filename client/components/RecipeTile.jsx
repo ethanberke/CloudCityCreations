@@ -5,15 +5,13 @@ import {
   CardActionArea,
   CardContent,
   CardMedia,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Grid,
   List,
   ListItem,
   ListItemText,
   Modal,
   Typography,
+  Paper,
 } from "@mui/material";
 
 export default function RecipeTile() {
@@ -47,12 +45,28 @@ export default function RecipeTile() {
               <CardActionArea>
                 <CardMedia
                   component="img"
-                  height="150"
+                  height="175"
                   image={recipe.image_url || "/images/grogu_peak.jpg"}
                   alt={recipe.recipe_name}
                 />
-                <CardContent>
-                  <Typography variant="h6" align="center">
+                <CardContent
+                  sx={{
+                    minHeight: 70,
+                    maxHeight: 70,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    align="center"
+                    sx={{
+                      wordBreak: "break-word",
+                      fontSize: {
+                        xs: "0.9rem",
+                        sm: "1rem",
+                        md: "1.1rem",
+                      },
+                    }}
+                  >
                     {recipe.recipe_name}
                   </Typography>
                 </CardContent>
@@ -66,31 +80,50 @@ export default function RecipeTile() {
         <Box
           sx={{
             position: "absolute",
-            width: "80%",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: "80%", md: "70%" },
             bgcolor: "background.paper",
-            maxHeight: "80vh",
+            maxHeight: "90vh",
             overflowY: "auto",
             boxShadow: 24,
-            p: 2,
+            p: 3,
+            borderRadius: 2,
           }}
         >
           {selectedRecipe && (
             <>
-              <Typography variant="h5" mt={2}>
-                {selectedRecipe.recipe_name}
-                {selectedRecipe.contributor}
-                {selectedRecipe.style}
-              </Typography>
+              <Box sx={{ textAlign: "center" }}>
+                <Typography variant="h4" mt={2}>
+                  {selectedRecipe.recipe_name}
+                </Typography>
+                <Typography variant="h5" mt={2}>
+                  Contributed by {selectedRecipe.contributor}
+                </Typography>
+                <Typography variant="h6" mt={2}>
+                  Style: {selectedRecipe.style}
+                </Typography>
+              </Box>
+              <Paper elevation={8}>
               <CardMedia
                 component="img"
-                height="200"
                 image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
                 alt={selectedRecipe.recipe_name}
+                sx={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: 300,
+                  objectFit: "cover",
+                  borderRadius: 2,
+                  my: 2,
+                }}
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "/images/grogu_peak.jpg";
                 }}
               />
+              </Paper>
 
               <Typography>Ingredients</Typography>
               <List sx={{ listStyleType: "disc", pl: 4 }}>
@@ -103,7 +136,8 @@ export default function RecipeTile() {
                   ).values(),
                 ].map((ingredient) => (
                   <ListItem
-                    sx={{ display: "list-item" }}
+                    disablePadding
+                    sx={{ display: "list-item", py: 0.25 }}
                     key={ingredient.ingredient}
                   >
                     <ListItemText primary={ingredient.ingredient} />
