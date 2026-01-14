@@ -40,7 +40,7 @@ export default function RecipeTile() {
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
         {recipes.map((recipe) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={recipe.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={recipe.id}>
             <Card onClick={() => handleOpen(recipe)}>
               <CardActionArea>
                 <CardMedia

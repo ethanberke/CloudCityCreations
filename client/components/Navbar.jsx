@@ -46,8 +46,8 @@ function TADS_AppBar() {
   };
 
   return (
-    <AppBar position="static">
-      <Container>
+    <AppBar position="fixed">
+      <Container maxWidth={false}>
         <Toolbar disableGutters>
           <Box
             component={Link}
@@ -73,14 +73,32 @@ function TADS_AppBar() {
             />
           </Box>
           <Typography
-            variant="h6"
+            variant="h5"
             noWrap
             component={Link}
             to="/"
             href="/"
             sx={{
               mr: 2,
-              display: { xs: "none", md: "flex" },
+              display: { xs: "none", sm: "none", md: "flex" },
+              fontFamily: "serif",
+              fontWeight: 700,
+              letterSpacing: ".3rem",
+              color: "inherit",
+              textDecoration: "none",
+            }}
+          >
+            Cloud City Culinary Creations
+          </Typography>
+                    <Typography
+            variant="h5"
+            noWrap
+            component={Link}
+            to="/"
+            href="/"
+            sx={{
+              mr: 2,
+              display: { xs: 'none', sm: "flex", md: "none" },
               fontFamily: "serif",
               fontWeight: 700,
               letterSpacing: ".3rem",
@@ -91,14 +109,14 @@ function TADS_AppBar() {
             Cloud City Culinary Creations
           </Typography>
           <Typography
-            variant="h6"
+            variant="h5"
             noWrap
             component={Link}
             to="/"
             href="/"
             sx={{
               mr: 2,
-              display: { xs: "flex", md: "none" },
+              display: { xs: "flex", sm: 'none', md: "none" },
               fontFamily: "serif",
               fontWeight: 700,
               letterSpacing: ".3rem",
@@ -106,7 +124,7 @@ function TADS_AppBar() {
               textDecoration: "none",
             }}
           >
-            Cloud City Culinary Creations
+            C-3 Creations
           </Typography>
 
           <Box sx={{ flexGrow: 1 }}></Box>
