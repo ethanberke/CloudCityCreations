@@ -1,60 +1,183 @@
-Galvanize Recipes App
+# Cloud City Culinary Creations (C3 Creations)
+
+*A Star‑Wars‑inspired recipe sharing app built for my coworkers at Offutt AFB.*
+
+Cloud City Culinary Creations — or **C3 Creations** — is a full‑stack recipe application designed to help my team share dishes for our regular potlucks and chili cookoffs. Inspired by the Star Wars theme at my workplace, the app provides a fun and modern way to browse, contribute, and enjoy recipes from across the squadron.
+
+The project is built with **JavaScript**, **Node/Express**, **React**, **PostgreSQL**, and **Material UI**, with **zero custom CSS** thanks to MUI’s built‑in styling system.
+
+---
+
+## Features
+
+### 🟦 Landing Page  
+A responsive grid of recipe tiles.  
+Clicking a tile opens a modal showing:
+
+- Recipe name  
+- Style  
+- Contributor  
+- Ingredients  
+- Instructions  
+- Optional image  
 
 ![Selected Recipe](client/images/SelectedRecipe.png)
-
-The Galvanize Recipes App is a web application designed to display various recipes contributed by the members of Galvanize Operation Level Up MCSPB-2309 cohort. It allows users to view recipes, contribute their own recipes, and browse through different culinary creations.
-
-Functionality:
-View Recipes: Users can browse through a list of available recipes.
-
-Recipe Details: Clicking on a specific recipe displays its details, including ingredients, instructions, contributor, style, and an optional image.
 
 ![Galvanize Opening Screen](client/images/GalvanizeOpening.png)
 
 ![Instructions](client/images/Instructions.png)
 
-Contribute: Users can submit their own recipes by providing details such as contributor, recipe name, style, image (optional), ingredients, and instructions.
+---
+
+### 🟩 Contribute Recipes  
+Users can add their own creations through the Contribute page:
+
+- Contributor name  
+- Recipe name  
+- Style  
+- Optional image URL  
+- Dynamic ingredient fields  
+- Dynamic instruction fields  
 
 ![Contribute Screen](client/images/ContributeScreen.png)
 
-Stack Used: The application is built using React for the front-end and Express.js for the back-end. It employs PostgreSQL as the database to store recipe information.
+---
 
-How to Use:
+## Tech Stack
 
-1. Viewing Recipes:
+### Front‑End
+- **React.js**
+- **Material UI (MUI)** for:
+  - Component library  
+  - Built‑in styling (no CSS files)  
+  - Responsive layout  
+  - Dark/light mode support  
 
-Upon loading the app, a list of available recipes will be displayed.
-Select a recipe from the dropdown list to view its details.
+### Back‑End
+- **Node.js + Express.js**
+- **PostgreSQL**
+- SQL queries optimized using JSON aggregation for clean recipe retrieval
 
-2. Contributing Recipes:
+---
 
-Click on the "Contribute" button to add a new recipe.
-Fill in the required fields for contributor, recipe name, and style.
-Optionally add an image URL.
-Add ingredients and instructions by clicking the "Add Ingredient" or "Add Instruction" buttons respectively.
-Submit the recipe by clicking the "Submit Recipe" button.
+## Project Structure
 
-Stack Used
-Front-end:
+```text
+client/          # React front-end
+server/          # Express back-end
+database.sql     # Schema definition
+migration.sql    # Seed data for recipes, ingredients, instructions
+.env             # Environment variables
+```
 
-React.js: A JavaScript library for building user interfaces.
-HTML/CSS: Used for structuring and styling the web pages.
+Create a `.env` file in the **client** directory with:
+VITE_API_URL=http://localhost:3001/api
+### Notes
+- `DATABASE_URL` must match your local PostgreSQL credentials  
+- `PORT` is the Express server port  
+- `VITE_API_URL` must point to your backend API root  
 
-Back-end:
+---
 
-Express.js: A web application framework for Node.js used to handle server-side logic and routing.
-PostgreSQL: A relational database used to store recipe information.
+## Database Setup
 
-Getting Started
-To get started with the app:
+### 1. Create the database
+```bash
+createdb recipes
+```
 
-1. Clone the repository.
-2. Ensure you have Node.js and PostgreSQL installed.
-3. Set up the database by running the SQL commands provided in the database.sql file.
-4. Install dependencies using npm install.
-5. Start the server using npm start.
-6. Open the app in your browser at http://localhost:<PORT> (replace <PORT> with the port number configured in your environment).
+2. Run the schema
 
-Developers: Ethan Berkebile
+psql -d recipes -f database.sql
 
-Contributions to the project are welcome! Feel free to submit issues or pull requests.
+3. Seed the database
+psql -d recipes -f migration.sql
+
+This populates:
+- Recipes
+- Ingredients
+- Instructions
+
+Running the App
+1. Install dependencies
+From the root, run:
+```bash
+npm install
+```
+Then install client dependencies:
+```bash
+cd client
+npm install
+```
+
+2. Start the backend
+From the server directory:
+```bash
+npm start
+```
+3. Start the frontend
+From the client directory:
+```bash
+npm run dev
+```
+
+4. Open the app
+Visit:
+http://localhost:5173
+(or whichever port Vite selects)
+
+How It Works
+Landing Page
+- Displays all recipes as tiles
+- Fully responsive
+- Clicking a tile opens a modal with full recipe details
+Recipe Modal
+Shows all recipe information using MUI components.
+Contribute Page
+- Add ingredients and instructions dynamically
+- Form validation for required fields
+- Submits data to the backend
+- Backend inserts into multiple tables in a single transaction
+- New recipes appear instantly on the landing page
+
+Developer
+Ethan Berkebile
+Contributions, suggestions, and pull requests are welcome.
+
+
+## Future Features
+
+Cloud City Culinary Creations is actively evolving. Planned enhancements include:
+
+### 🔐 Authentication & User Accounts (Supabase)
+- Full authentication flow powered by **Supabase Auth**
+- Users can create accounts and log in to manage their own recipes
+- Admin-level permissions for elevated management capabilities
+
+### 🖼 Image Upload Support
+- Direct image uploads instead of relying on external URLs
+- Secure storage via **Supabase Storage**
+- Automatic image optimization and previewing
+
+### ✏️ Edit & Delete Recipes
+- Users can edit or delete recipes they have submitted
+- Admins can edit or remove any recipe in the system
+- UI updates to clearly show ownership and available actions
+
+### 👀 Submission Preview Modal
+- When contributing a recipe, users will see a **preview modal** before final submission
+- Displays:
+  - Recipe name  
+  - Style  
+  - Contributor  
+  - Ingredients  
+  - Instructions  
+  - Image preview  
+- Helps users verify formatting and content before saving to the database
+
+### 📱 Additional UI/UX Enhancements
+- Improved mobile layout for recipe modals and forms
+- Optional “favorite recipes” feature tied to user accounts
+- Sorting and filtering options (by style, contributor, popularity)
+
+These features will continue to expand the app into a fully interactive, community-driven recipe platform.
