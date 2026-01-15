@@ -13,8 +13,8 @@ const Contribute = ({ onRecipeSubmit }) => {
     recipe_name: "",
     style: "",
     image_url: "",
-    ingredients: [],
-    instructions: [],
+    ingredients: [""],
+    instructions: [""],
   });
 
   const handleAddIngredient = () => {
@@ -118,7 +118,7 @@ const Contribute = ({ onRecipeSubmit }) => {
             sx={{ width: "50ch", margin: "10px 0" }}
             variant="filled"
             multiline
-            label={`Ingredient ${index + 1}*`}
+            label={`Ingredient ${index + 1}`}
           />
         </Box>
       ))}
@@ -137,7 +137,7 @@ const Contribute = ({ onRecipeSubmit }) => {
             sx={{ width: "50ch", margin: "10px 0" }}
             variant="filled"
             multiline
-            label={`Instruction Step ${index + 1}*`}
+            label={`Step ${index + 1}`}
             rows={2}
           />
         </Box>
