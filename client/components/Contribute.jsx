@@ -138,7 +138,6 @@ const Contribute = ({ onRecipeSubmit }) => {
             variant="filled"
             multiline
             label={`Step ${index + 1}`}
-            rows={2}
           />
         </Box>
       ))}
