@@ -86,11 +86,7 @@ VITE_API_URL=http://localhost:3001/api
 createdb recipes
 ```
 
-2. Run the schema
-
-psql -d recipes -f database.sql
-
-3. Seed the database
+2. Run the schema and seed the database
 psql -d recipes -f migration.sql
 
 This populates:
