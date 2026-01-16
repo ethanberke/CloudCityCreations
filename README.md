@@ -27,6 +27,9 @@ Clicking a tile opens a modal showing:
 
 ![Instructions](client/images/SelectedRecipeTile2.png)
 
+![Responsive](client/images/Responsive.png)
+
+
 ---
 
 ### 🟩 Contribute Recipes  
