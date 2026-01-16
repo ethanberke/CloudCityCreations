@@ -14,7 +14,7 @@ const Contribute = ({ onRecipeSubmit }) => {
     style: "",
     image_url: "",
     ingredients: [""],
-    instructions: [""],
+    instructions: [],
   });
 
   const handleAddIngredient = () => {

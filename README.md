@@ -1,6 +1,6 @@
 # Cloud City Culinary Creations (C3 Creations)
 
-*A Star‑Wars‑inspired recipe sharing app built for my coworkers at Offutt AFB.*
+*A Star‑Wars‑inspired recipe sharing app built for my coworkers.*
 
 Cloud City Culinary Creations — or **C3 Creations** — is a full‑stack recipe application designed to help my team and workplace share dishes for our semi-regular potlucks and chili cookoffs. Inspired by the Star Wars theme at my office, the app provides a fun and modern way to browse, contribute, and enjoy recipes from across the squadron and galaxy.
 
