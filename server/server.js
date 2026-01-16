@@ -21,69 +21,32 @@ app.use(
 
 app.get("/api/recipes", (req, res) => {
   sql`
-    SELECT 
-      recipes.id AS recipe_id,
-      recipes.contributor,
-      recipes.recipe_name,
-      recipes.style,
-      recipes.image_url,
-      ingredients.id AS ingredient_id,
-      ingredients.ingredient,
-      instructions.id AS instruction_id,
-      instructions.step_order,
-      instructions.step
-    FROM 
-      recipes
-    INNER JOIN 
-      ingredients ON recipes.id = ingredients.recipe_id
-    INNER JOIN 
-      instructions ON recipes.id = instructions.recipe_id
+    SELECT
+      r.id AS recipe_id,
+      r.contributor,
+      r.recipe_name,
+      r.style,
+      r.image_url,
+      (
+        SELECT json_agg(json_build_object(
+          'ingredient_id', i.id,
+          'ingredient', i.ingredient
+        ))
+        FROM ingredients i
+        WHERE i.recipe_id = r.id
+      ) AS ingredients,
+      (
+        SELECT json_agg(json_build_object(
+          'instruction_id', s.id,
+          'step_order', s.step_order,
+          'step', s.step
+        ) ORDER BY s.step_order)
+        FROM instructions s
+        WHERE s.recipe_id = r.id
+      ) AS instructions
+    FROM recipes r
   `
-    .then((data) => {
-      const recipes = {};
-      data.forEach((row) => {
-        const {
-          recipe_id,
-          contributor,
-          recipe_name,
-          style,
-          image_url,
-          ingredient_id,
-          ingredient,
-          instruction_id,
-          step_order,
-          step,
-        } = row;
-
-        if (!recipes[recipe_id]) {
-          recipes[recipe_id] = {
-            recipe_id,
-            contributor,
-            recipe_name,
-            style,
-            image_url,
-            ingredients: [],
-            instructions: [],
-          };
-        }
-
-        if (ingredient_id && ingredient) {
-          recipes[recipe_id].ingredients.push({ ingredient_id, ingredient });
-        }
-
-        if (instruction_id && step_order && step) {
-          recipes[recipe_id].instructions.push({
-            instruction_id,
-            step_order,
-            step,
-          });
-        }
-      });
-
-      const recipesArray = Object.values(recipes);
-
-      res.send(recipesArray);
-    })
+    .then((data) => res.json(data))
     .catch((err) => {
       console.error(err);
       res.sendStatus(500);
@@ -94,73 +57,35 @@ app.get("/api/recipes/:recipe_id", (req, res) => {
   const recipeId = req.params.recipe_id;
 
   sql`
-    SELECT 
-      recipes.id AS recipe_id,
-      recipes.contributor,
-      recipes.recipe_name,
-      recipes.style,
-      recipes.image_url,
-      ingredients.id AS ingredient_id,
-      ingredients.ingredient,
-      instructions.id AS instruction_id,
-      instructions.step_order,
-      instructions.step
-    FROM 
-      recipes
-    INNER JOIN 
-      ingredients ON recipes.id = ingredients.recipe_id
-    INNER JOIN 
-      instructions ON recipes.id = instructions.recipe_id
-    WHERE 
-      recipes.id = ${recipeId}
+    SELECT
+      r.id AS recipe_id,
+      r.contributor,
+      r.recipe_name,
+      r.style,
+      r.image_url,
+      (
+        SELECT json_agg(json_build_object(
+          'ingredient_id', i.id,
+          'ingredient', i.ingredient
+        ))
+        FROM ingredients i
+        WHERE i.recipe_id = r.id
+      ) AS ingredients,
+      (
+        SELECT json_agg(json_build_object(
+          'instruction_id', s.id,
+          'step_order', s.step_order,
+          'step', s.step
+        ) ORDER BY s.step_order)
+        FROM instructions s
+        WHERE s.recipe_id = r.id
+      ) AS instructions
+    FROM recipes r
+    WHERE r.id = ${recipeId}
   `
     .then((data) => {
-      if (data.length === 0) {
-        res.sendStatus(404);
-      } else {
-        const recipeData = {
-          recipe_id: data[0].recipe_id,
-          contributor: data[0].contributor,
-          recipe_name: data[0].recipe_name,
-          style: data[0].style,
-          image_url: data[0].image_url,
-          ingredients: [],
-          instructions: [],
-        };
-        //Set prevents duplication
-        const seenIngredients = new Set();
-        const seenInstructions = new Set();
-
-        data.forEach((row) => {
-          if (
-            row.ingredient_id &&
-            row.ingredient &&
-            !seenIngredients.has(row.ingredient_id)
-          ) {
-            recipeData.ingredients.push({
-              ingredient_id: row.ingredient_id,
-              ingredient: row.ingredient,
-            });
-            seenIngredients.add(row.ingredient_id);
-          }
-
-          if (
-            row.instruction_id &&
-            row.step_order &&
-            row.step &&
-            !seenInstructions.has(row.instruction_id)
-          ) {
-            recipeData.instructions.push({
-              instruction_id: row.instruction_id,
-              step_order: row.step_order,
-              step: row.step,
-            });
-            seenInstructions.add(row.instruction_id);
-          }
-        });
-
-        res.json(recipeData);
-      }
+      if (data.length === 0) return res.sendStatus(404);
+      res.json(data[0]);
     })
     .catch((err) => {
       console.error(err);
