@@ -2,9 +2,9 @@
 
 *A Star‑Wars‑inspired recipe sharing app built for my coworkers at Offutt AFB.*
 
-Cloud City Culinary Creations — or **C3 Creations** — is a full‑stack recipe application designed to help my team share dishes for our regular potlucks and chili cookoffs. Inspired by the Star Wars theme at my workplace, the app provides a fun and modern way to browse, contribute, and enjoy recipes from across the squadron.
+Cloud City Culinary Creations — or **C3 Creations** — is a full‑stack recipe application designed to help my team and workplace share dishes for our semi-regular potlucks and chili cookoffs. Inspired by the Star Wars theme at my office, the app provides a fun and modern way to browse, contribute, and enjoy recipes from across the squadron and galaxy.
 
-The project is built with **JavaScript**, **Node/Express**, **React**, **PostgreSQL**, and **Material UI**, with **zero custom CSS** thanks to MUI’s built‑in styling system.
+The project is built with **JavaScript**, **Node/Express**, **React**, **PostgreSQL**, and **Material UI**.
 
 ---
 
@@ -21,11 +21,11 @@ Clicking a tile opens a modal showing:
 - Instructions  
 - Optional image  
 
-![Selected Recipe](client/images/SelectedRecipe.png)
+![Galvanize Opening Screen](client/images/LandingScreen.png)
 
-![Galvanize Opening Screen](client/images/GalvanizeOpening.png)
+![Selected Recipe](client/images/SelectedRecipeTile.png)
 
-![Instructions](client/images/Instructions.png)
+![Instructions](client/images/SelectedRecipeTile2.png)
 
 ---
 
@@ -36,10 +36,10 @@ Users can add their own creations through the Contribute page:
 - Recipe name  
 - Style  
 - Optional image URL  
-- Dynamic ingredient fields  
-- Dynamic instruction fields  
+- Ingredient (Can use as many as necessary)
+- Instruction (Can use as many as necessary) 
 
-![Contribute Screen](client/images/ContributeScreen.png)
+![Contribute Screen](client/images/Contribute.png)
 
 ---
 
@@ -53,10 +53,12 @@ Users can add their own creations through the Contribute page:
   - Responsive layout  
   - Dark/light mode support  
 
+![Dark Mode](client/images/DarkMode.png)
+
 ### Back‑End
 - **Node.js + Express.js**
 - **PostgreSQL**
-- SQL queries optimized using JSON aggregation for clean recipe retrieval
+- SQL queries using multiple tables (recipe's general info table, ingredients table, instructions table) for clean recipe data retrieval
 
 ---
 
@@ -65,13 +67,11 @@ Users can add their own creations through the Contribute page:
 ```text
 client/          # React front-end
 server/          # Express back-end
-database.sql     # Schema definition
 migration.sql    # Seed data for recipes, ingredients, instructions
 .env             # Environment variables
 ```
 
-Create a `.env` file in the **client** directory with:
-VITE_API_URL=http://localhost:3001/api
+Create a `.env` file in the **client** directory using the `.env.template` file
 ### Notes
 - `DATABASE_URL` must match your local PostgreSQL credentials  
 - `PORT` is the Express server port  
@@ -81,49 +81,56 @@ VITE_API_URL=http://localhost:3001/api
 
 ## Database Setup
 
-### 1. Create the database
+### 1. Create the Postgres database
 ```bash
 createdb recipes
 ```
 
-2. Run the schema and seed the database
+### 2. Run the schema and seed the database
+```bash
 psql -d recipes -f migration.sql
+```
 
-This populates:
+This populates the following tables:
 - Recipes
 - Ingredients
 - Instructions
 
-Running the App
-1. Install dependencies
+---
+## Running the App
+
+### 1. Install dependencies
+
 From the root, run:
 ```bash
 npm install
 ```
-Then install client dependencies:
+### 2. Install client dependencies:
+
 ```bash
 cd client
 npm install
 ```
 
-2. Start the backend
+### 3. Start the backend
+
 From the server directory:
 ```bash
 npm start
 ```
-3. Start the frontend
+### 4. Start the frontend
 From the client directory:
 ```bash
 npm run dev
 ```
 
-4. Open the app
+### 5. Open the app
 Visit:
 http://localhost:5173
 (or whichever port Vite selects)
 
-How It Works
-Landing Page
+## How It Works
+### Landing Page
 - Displays all recipes as tiles
 - Fully responsive
 - Clicking a tile opens a modal with full recipe details
@@ -135,11 +142,6 @@ Contribute Page
 - Submits data to the backend
 - Backend inserts into multiple tables in a single transaction
 - New recipes appear instantly on the landing page
-
-Developer
-Ethan Berkebile
-Contributions, suggestions, and pull requests are welcome.
-
 
 ## Future Features
 
@@ -172,8 +174,8 @@ Cloud City Culinary Creations is actively evolving. Planned enhancements include
 - Helps users verify formatting and content before saving to the database
 
 ### 📱 Additional UI/UX Enhancements
-- Improved mobile layout for recipe modals and forms
 - Optional “favorite recipes” feature tied to user accounts
-- Sorting and filtering options (by style, contributor, popularity)
+- Upvote option on recipe tiles for users to be able to sort by most liked recipes
+- Sorting and filtering options (by style, contributor, date of submission)
 
 These features will continue to expand the app into a fully interactive, community-driven recipe platform.
