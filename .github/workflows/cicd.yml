@@ -30,7 +30,7 @@ jobs:
 
       - name: Run Prettier check (frontend)
         working-directory: ./client
-        run: npm run prettier:check
+        run: npm run prettier . --check
 
       # ---------- BACKEND ----------
       - name: Install backend dependencies
@@ -43,5 +43,5 @@ jobs:
 
       - name: Run Prettier check (backend)
         working-directory: ./server
-        run: npm run prettier:check
+        run: npm run prettier . --check
 
