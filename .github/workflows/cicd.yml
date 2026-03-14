@@ -72,7 +72,7 @@ jobs:
           context: ./client
           file: ./client/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/cloudcity-client:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cloudcitycreations-client:latest
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -80,4 +80,4 @@ jobs:
           context: ./server
           file: ./server/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/cloudcity-server:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cloudcitycreations-server:latest
