@@ -1,0 +1,45 @@
+services:
+
+  client:
+    build: ./client
+    env_file:
+      - ./client/.env
+    container_name: react_client
+    command: npm run dev -- --host
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+  server:
+    build: ./server
+    env_file:
+      - ./server/.env
+    container_name: node_server
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/migration.sql:/docker-entrypoint-initdb.d/migration.sql
+
+volumes:
+  postgres_data:

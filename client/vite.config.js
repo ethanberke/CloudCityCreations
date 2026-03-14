@@ -6,8 +6,13 @@ dotenv.config({ path: "../.env" });
 export default {
   plugins: [react()],
   server: {
+    host: true,
+    port: 5173,
     proxy: {
-      "/api": `http://localhost:${process.env.PORT}`,
+      "/api": {
+        target: `http://server:5000`,
+        changeOrigin: true,
+      }
     },
   },
   cacheDir: "../node_modules/.vite",

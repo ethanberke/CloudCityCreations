@@ -6,18 +6,19 @@ import postgres from "postgres";
 dotenv.config({ path: "../.env" });
 console.log("DB URL:", process.env.DATABASE_URL);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const sql = postgres(process.env.DATABASE_URL);
 const app = express();
 
 app.use(express.json());
-app.use(express.static("../client/dist"));
 
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   }),
 );
+
+app.use(express.static("../client/dist"));
 
 app.get("/api/recipes", (req, res) => {
   sql`

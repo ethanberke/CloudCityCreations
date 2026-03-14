@@ -100,12 +100,14 @@ VALUES
   (4, '1/4 teaspoon garlic powder'),
   (4, '3/4 cup heavy/whipping cream'),
   (4, 'Fresh parsley chopped (optional, to taste)'),
+
   (5, '1.25kg red-skinned potatoes, unpeeled (cut any large ones to the same size as the smaller ones)'),
   (5, '30g of butter, optional'),
   (5, '4 spring onions'),
   (5, '100g cornichonns or sweet pickled gherkins'),
   (5, '175g Gruyere cheese, grated'),
   (5, 'Sea salt and freshly ground black pepper'),
+
   (6, '2 lbs red potatoes'),
   (6, '1 yellow onion'),
   (6, '3 carrots'),
@@ -163,9 +165,11 @@ VALUES
   (4, 5, 'Add in the chicken broth and lemon juice. Stir and let it cook for about a minute or until the sauce is noticeably thickened.'),
   (4, 6, 'Add in the garlic powder and cream. Stir or whisk it until the garlic powder has dissolved.'),
   (4, 7, 'Add the pork back in and cook for another 3-5 minutes or until the sauce has thickened up a bit (let the sauce bubble a bit but not furiously boil) and the pork chops are fully cooked through (145F minimum). Keep in mind the pork`s temperature will continue to rise once you stop cooking it, so if it is close, I would take it off the heat and let it rest for a few minutes before serving. Season the sauce with extra salt & pepper as needed and parsley if you wish.'),
+  
   (5, 1, 'Boil the potatoes in salted boiling water until tender'),
   (5, 2, 'Meanwhile, finely chop the spring onions on the diagonal and dice the cornichons'),  
   (5, 3, 'Drain the potatoes and roughly crush them (still in their skins) with a potato masher.  Add the butter if using.  Stir in the spring onions and cornichons, then fold in the cheese.  Taste and season as necessary, then serve'),
+  
   (6, 1, 'Dice the onion and red potatoes. Slice the carrots and celery. Mince the garlic. Place the prepared vegetables in a four or five quart slow cooker.'),
   (6, 2, 'Place the stew meat in a bowl and sprinkle the flour, salt, and pepper over top. Toss the meat until it is evenly coated in flour.'),
   (6, 3, 'Heat a large skillet over medium-high. Once very hot, add the cooking oil and swirl to coat the surface of the skillet. Add the stew meat and cook, without stirring, until browned on the bottom. Stir and then allow the beef to brown on a second side. Transfer the meat to the slow cooker.'),
