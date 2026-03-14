@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint .",
+    "prettier": "prettier . --check"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

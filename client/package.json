@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite serve",
-    "build": "vite build"
+    "build": "vite build",
+    "lint": "eslint .",
+    "prettier": "prettier . --check"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

@@ -1,0 +1,47 @@
+name: CICD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.12.0
+
+      # ---------- FRONTEND ----------
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Run ESLint (frontend)
+        working-directory: ./client
+        run: npm run lint
+
+      - name: Run Prettier check (frontend)
+        working-directory: ./client
+        run: npm run prettier:check
+
+      # ---------- BACKEND ----------
+      - name: Install backend dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run ESLint (backend)
+        working-directory: ./server
+        run: npm run lint
+
+      - name: Run Prettier check (backend)
+        working-directory: ./server
+        run: npm run prettier:check
+
