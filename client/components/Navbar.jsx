@@ -90,7 +90,7 @@ function TADS_AppBar() {
           >
             Cloud City Culinary Creations
           </Typography>
-                    <Typography
+          <Typography
             variant="h5"
             noWrap
             component={Link}
@@ -98,7 +98,7 @@ function TADS_AppBar() {
             href="/"
             sx={{
               mr: 2,
-              display: { xs: 'none', sm: "flex", md: "none" },
+              display: { xs: "none", sm: "flex", md: "none" },
               fontFamily: "serif",
               fontWeight: 700,
               letterSpacing: ".3rem",
@@ -116,7 +116,7 @@ function TADS_AppBar() {
             href="/"
             sx={{
               mr: 2,
-              display: { xs: "flex", sm: 'none', md: "none" },
+              display: { xs: "flex", sm: "none", md: "none" },
               fontFamily: "serif",
               fontWeight: 700,
               letterSpacing: ".3rem",

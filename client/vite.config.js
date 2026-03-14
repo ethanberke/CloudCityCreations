@@ -12,7 +12,7 @@ export default {
       "/api": {
         target: `http://server:5000`,
         changeOrigin: true,
-      }
+      },
     },
   },
   cacheDir: "../node_modules/.vite",
