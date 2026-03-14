@@ -9,9 +9,11 @@
     "prettier": "prettier . --check"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "eslint": "^9.39.2",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.4.0",
     "nodemon": "^2.0.15"
   },
   "dependencies": {
