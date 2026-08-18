@@ -106,27 +106,31 @@ app.post("/api/recipes", async (req, res) => {
 
   console.log("BODY:", req.body);
   try {
-    const recipeResult = await sql`
-      INSERT INTO recipes (contributor, recipe_name, style, image_url)
-      VALUES (${contributor}, ${recipe_name}, ${style}, ${image_url})
-      RETURNING id
-    `;
-
-    const recipe_id = recipeResult[0].id;
-
-    for (const ingredient of ingredients) {
-      await sql`
-        INSERT INTO ingredients (recipe_id, ingredient)
-        VALUES (${recipe_id}, ${ingredient})
+    const recipe_id = await sql.begin(async (sql) => {
+      const recipeResult = await sql`
+        INSERT INTO recipes (contributor, recipe_name, style, image_url)
+        VALUES (${contributor}, ${recipe_name}, ${style}, ${image_url})
+        RETURNING id
       `;
-    }
 
-    for (let i = 0; i < instructions.length; i++) {
-      await sql`
-        INSERT INTO instructions (recipe_id, step_order, step)
-        VALUES (${recipe_id}, ${i + 1}, ${instructions[i]})
-      `;
-    }
+      const recipe_id = recipeResult[0].id;
+
+      for (const ingredient of ingredients) {
+        await sql`
+          INSERT INTO ingredients (recipe_id, ingredient)
+          VALUES (${recipe_id}, ${ingredient})
+        `;
+      }
+
+      for (let i = 0; i < instructions.length; i++) {
+        await sql`
+          INSERT INTO instructions (recipe_id, step_order, step)
+          VALUES (${recipe_id}, ${i + 1}, ${instructions[i]})
+        `;
+      }
+
+      return recipe_id;
+    });
 
     res.json({ message: "Recipe created", recipe_id });
   } catch (error) {
