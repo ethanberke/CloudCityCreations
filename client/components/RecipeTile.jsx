@@ -13,6 +13,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import DeleteRecipe from "./DeleteRecipe";
 
 export default function RecipeTile() {
   const [recipes, setRecipes] = useState([]);
@@ -41,7 +42,11 @@ export default function RecipeTile() {
       <Grid container spacing={2}>
         {recipes.map((recipe) => (
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={recipe.id}>
-            <Card onClick={() => handleOpen(recipe)}>
+            <Card
+              onClick={() => handleOpen(recipe)}
+              sx={{ position: "relative" }}
+            >
+              <DeleteRecipe />
               <CardActionArea>
                 <CardMedia
                   component="img"
