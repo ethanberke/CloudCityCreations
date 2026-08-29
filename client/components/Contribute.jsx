@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import SubmissionPreviewModal from "./SubmissionPreviewModal";
 
 const Contribute = ({ onRecipeSubmit }) => {
   const navigate = useNavigate();
+  const redirectTimer = useRef(null);
 
   const [newRecipe, setNewRecipe] = useState({
     contributor: "",
@@ -16,6 +20,23 @@ const Contribute = ({ onRecipeSubmit }) => {
     ingredients: [""],
     instructions: [],
   });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [notice, setNotice] = useState(null);
+
+  useEffect(() => () => clearTimeout(redirectTimer.current), []);
+
+  // What the preview shows is exactly what gets submitted: blank ingredient
+  // and step rows are dropped here rather than only being hidden from view.
+  const previewRecipe = {
+    ...newRecipe,
+    contributor: newRecipe.contributor.trim(),
+    recipe_name: newRecipe.recipe_name.trim(),
+    style: newRecipe.style.trim(),
+    image_url: newRecipe.image_url.trim(),
+    ingredients: newRecipe.ingredients.map((i) => i.trim()).filter(Boolean),
+    instructions: newRecipe.instructions.map((s) => s.trim()).filter(Boolean),
+  };
 
   const handleAddIngredient = () => {
     setNewRecipe({
@@ -43,13 +64,32 @@ const Contribute = ({ onRecipeSubmit }) => {
     setNewRecipe({ ...newRecipe, instructions: updatedInstructions });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const confirm = window.confirm("Are you ready to submit your recipe?");
-    if (confirm) {
-      await onRecipeSubmit(newRecipe);
-      alert("Recipe submitted successfully!");
-      navigate("/");
+    setNotice(null);
+    setPreviewOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setSubmitting(true);
+
+    try {
+      await onRecipeSubmit(previewRecipe);
+      setPreviewOpen(false);
+      setNotice({
+        severity: "success",
+        message: `Successfully submitted "${previewRecipe.recipe_name}".`,
+      });
+      // Let the confirmation land before leaving the page for the recipe list.
+      redirectTimer.current = setTimeout(() => navigate("/"), 1500);
+    } catch (err) {
+      console.error(err);
+      setNotice({
+        severity: "error",
+        message: "Could not submit your recipe. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -156,6 +196,29 @@ const Contribute = ({ onRecipeSubmit }) => {
       >
         Submit Recipe
       </Button>
+
+      <SubmissionPreviewModal
+        open={previewOpen}
+        recipe={previewRecipe}
+        onCancel={() => setPreviewOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        submitting={submitting}
+      />
+
+      <Snackbar
+        open={Boolean(notice)}
+        autoHideDuration={6000}
+        onClose={() => setNotice(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={notice?.severity}
+          variant="filled"
+          onClose={() => setNotice(null)}
+        >
+          {notice?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
