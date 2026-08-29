@@ -34,10 +34,6 @@ Epic/issue, not a commitment.
   dead code (unrouted); `components/Recipes.jsx` (bare `<select>`) is far less developed than
   `RecipeTile.jsx`'s grid+modal pattern used on the landing page. See
   [architecture.md](./architecture.md#known-duplication-two-implementations-per-route).
-- **Wrap `POST /api/recipes`'s multi-table insert in a transaction.** Currently three
-  sequential inserts with no `sql.begin(...)` — a mid-loop failure leaves an orphaned
-  `recipes` row with partial or no children. Low-stakes today, more visible once recipes have
-  real owners. See [api-routes.md](./api-routes.md#post-apirecipes-detail).
 - **No test suite in either workspace.** CI currently only runs ESLint + Prettier
   (`.github/workflows/cicd.yml`) — no test job exists to add to.
 

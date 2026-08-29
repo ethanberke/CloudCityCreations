@@ -65,7 +65,10 @@ Single-file Express server, no router modules, no ORM/query builder — uses `po
 
 - `GET /api/recipes` — all recipes, each with `ingredients` and `instructions` aggregated via correlated subqueries (`json_agg`) into nested JSON.
 - `GET /api/recipes/:recipe_id` — same shape, single recipe.
-- `POST /api/recipes` — inserts into `recipes`, then loops individual `INSERT`s into `ingredients` and `instructions` (not wrapped in a SQL transaction, despite the README describing it as one — if partial-insert consistency matters, this is the place to add `sql.begin(...)`).
+- `POST /api/recipes` — inserts into `recipes`, then loops individual `INSERT`s into `ingredients` and `instructions`, all inside `sql.begin(...)` so a partial insert rolls back.
+- `PATCH /api/recipes/:recipe_id` — replaces the recipe and re-inserts all of its children (not a merge — `step_order` is renumbered from the new array). Every field is required: `postgres` rejects `undefined`, so a partial body 500s and rolls back rather than clearing columns.
+- `DELETE /api/recipes/:recipe_id` — deletes the recipe's `ingredients`/`instructions` rows then the recipe itself, in one transaction; the schema has no `ON DELETE CASCADE`. Both respond `404` when the id doesn't exist.
+- Neither `PATCH` nor `DELETE` checks ownership — there's no auth, so any caller can modify any recipe.
 - Serves `client/dist` as static files (post-build), and allows CORS only from `localhost:5173` / `127.0.0.1:5173`.
 
 ### Frontend (`client/`)
@@ -88,4 +91,4 @@ Import order is enforced by `@ianvs/prettier-plugin-sort-imports` per `prettier.
 
 ### Planned but not yet implemented (per README)
 
-Supabase auth, Supabase image storage, edit/delete recipes, submission preview modal, favorites/upvotes, sorting/filtering. Don't assume any of this exists in the code yet.
+Supabase auth, Supabase image storage, edit/delete UI, submission preview modal, favorites/upvotes, sorting/filtering. Don't assume any of this exists in the code yet — the `PATCH`/`DELETE` API routes are the exception, they've landed (unowned and unauthenticated).
