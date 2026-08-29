@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
   Card,
   CardActionArea,
@@ -11,14 +12,19 @@ import {
   ListItemText,
   Modal,
   Paper,
+  Snackbar,
   Typography,
 } from "@mui/material";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 import DeleteRecipe from "./DeleteRecipe";
 
 export default function RecipeTile() {
   const [recipes, setRecipes] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [recipeToDelete, setRecipeToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/recipes`)
@@ -37,16 +43,51 @@ export default function RecipeTile() {
     setSelectedRecipe(null);
   };
 
+  const handleDeleteCancel = () => {
+    setRecipeToDelete(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/recipes/${recipeToDelete.recipe_id}`,
+        { method: "DELETE" },
+      );
+
+      if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
+
+      setRecipes((current) =>
+        current.filter(
+          (recipe) => recipe.recipe_id !== recipeToDelete.recipe_id,
+        ),
+      );
+      setRecipeToDelete(null);
+    } catch (err) {
+      console.error(err);
+      setDeleteError(
+        `Could not delete "${recipeToDelete.recipe_name}". Please try again.`,
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
         {recipes.map((recipe) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={recipe.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={recipe.recipe_id}>
             <Card
               onClick={() => handleOpen(recipe)}
               sx={{ position: "relative" }}
             >
-              <DeleteRecipe />
+              <DeleteRecipe
+                recipeName={recipe.recipe_name}
+                onDelete={() => setRecipeToDelete(recipe)}
+              />
               <CardActionArea>
                 <CardMedia
                   component="img"
@@ -160,7 +201,7 @@ export default function RecipeTile() {
                     ]),
                   ).values(),
                 ].map((instruction) => (
-                  <ListItem component="li" key={instruction.id}>
+                  <ListItem component="li" key={instruction.instruction_id}>
                     <ListItemText
                       primary={instruction.step}
                       sx={{ display: "list-item" }}
@@ -172,6 +213,29 @@ export default function RecipeTile() {
           )}
         </Box>
       </Modal>
+
+      <DeleteConfirmModal
+        open={Boolean(recipeToDelete)}
+        recipeName={recipeToDelete?.recipe_name}
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        deleting={deleting}
+      />
+
+      <Snackbar
+        open={Boolean(deleteError)}
+        autoHideDuration={6000}
+        onClose={() => setDeleteError("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          variant="filled"
+          onClose={() => setDeleteError("")}
+        >
+          {deleteError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
