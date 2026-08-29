@@ -14,10 +14,11 @@ Epic/issue, not a commitment.
   optimization and previewing. Replaces the current "paste a URL, fall back to a placeholder
   image if it 404s" behavior in `RecipeTile.jsx`.
 
-- **Edit & delete recipes**
-  Requires auth (to know who's allowed to edit/delete what) and requires deciding how
-  `ingredients`/`instructions` rows get cleaned up on delete — no `ON DELETE CASCADE` exists
-  today, see [data-model.md](./data-model.md#no-cascade-delete-no-unique-constraints).
+- **Edit & delete recipes** — _delete UI landed, edit UI and ownership pending._
+  `DELETE /api/recipes/:recipe_id` is wired up from the recipe grid: a delete icon on each
+  tile opens a confirmation modal naming the recipe, and confirming removes the tile without
+  a refetch. Still open: no edit UI, and neither route checks who is asking — any visitor can
+  delete any recipe until Supabase Auth lands.
 
 - **Submission preview modal**
   Before final submission on the Contribute page, show a preview (name, style, contributor,
