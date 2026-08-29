@@ -60,9 +60,13 @@ per recipe with a `json_agg` subquery rather than storing/parsing JSON by hand.
 ### No cascade delete, no unique constraints
 
 Neither FK has `ON DELETE CASCADE`, and there's no `users` table to attach `contributor` to —
-recipes have no owner. Deleting a recipe (not yet implemented — see
-[roadmap.md](./roadmap.md)) would need to explicitly delete its `ingredients`/`instructions`
-rows first, or add the cascade, before that feature lands.
+recipes have no owner. `DELETE /api/recipes/:recipe_id` therefore removes the
+`ingredients`/`instructions` rows explicitly before the `recipes` row, all inside one
+`sql.begin(...)` transaction; `PATCH` does the same to replace a recipe's children. Adding the
+cascade later would let both drop those explicit deletes, but nothing depends on that today.
+
+Recipes still have no owner, so neither route can check *who* is deleting — that's blocked on
+Supabase Auth (see [roadmap.md](./roadmap.md)).
 
 ### Nested read shape
 

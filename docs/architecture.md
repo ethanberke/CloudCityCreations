@@ -6,8 +6,9 @@
   office's potlucks and chili cookoffs.
 - Keep the stack boring: React (Vite) + MUI on the front end, a single Express file on the
   back end, Postgres for storage. No ORM, no router modules, no state library.
-- Ship fast, iterate later — auth, image upload, and edit/delete are explicitly deferred
-  (see [roadmap.md](./roadmap.md)) rather than blocking the first usable version.
+- Ship fast, iterate later — auth and image upload are explicitly deferred (see
+  [roadmap.md](./roadmap.md)) rather than blocking the first usable version. Edit/delete
+  exist at the API level but are unowned and unauthenticated for the same reason.
 
 ## Services
 
@@ -45,9 +46,10 @@ same shape). No pagination, filtering, or sorting yet.
 **Write path:** `Contribute.jsx` builds a recipe object client-side (growable arrays of
 ingredient/instruction text fields) and `ContributePage.jsx` POSTs it to `/api/recipes`. The
 server inserts the `recipes` row first to get an id, then loops individual `INSERT`s into
-`ingredients` and `instructions` — **not** wrapped in a SQL transaction, despite the README
-describing it as one. If partial-insert consistency ever matters, that's where to add
-`sql.begin(...)`.
+`ingredients` and `instructions`, the whole sequence wrapped in `sql.begin(...)` so a failure
+part-way through rolls back instead of orphaning a `recipes` row. `PATCH` and `DELETE` on
+`/api/recipes/:recipe_id` are transactional for the same reason — see
+[api-routes.md](./api-routes.md).
 
 **Production serving:** the Express server also serves `client/dist` as static files
 post-build, so in a deployed setting `client` and `server` can be the same origin — CORS is
@@ -88,9 +90,6 @@ There is no test suite configured in either workspace, and no deploy step past t
 
 ## Open questions / decide-later
 
-- Whether the multi-table `POST /api/recipes` insert should be wrapped in a real transaction
-  before Supabase auth adds per-user ownership (a partial insert becomes more visible once
-  recipes have owners) — see [data-model.md](./data-model.md).
 - Whether to delete `pages/HomePage.jsx` and `components/Recipes.jsx` outright or migrate
   `/recipes` onto `RecipeTile.jsx`'s pattern — flag this rather than assuming either is
   intentional if asked to consolidate.
