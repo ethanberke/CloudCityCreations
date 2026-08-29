@@ -24,7 +24,7 @@ export default function RecipeTile() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeToDelete, setRecipeToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
+  const [notice, setNotice] = useState(null);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/recipes`)
@@ -49,7 +49,7 @@ export default function RecipeTile() {
 
   const handleDeleteConfirm = async () => {
     setDeleting(true);
-    setDeleteError("");
+    setNotice(null);
 
     try {
       const res = await fetch(
@@ -64,12 +64,17 @@ export default function RecipeTile() {
           (recipe) => recipe.recipe_id !== recipeToDelete.recipe_id,
         ),
       );
+      setNotice({
+        severity: "success",
+        message: `Successfully deleted "${recipeToDelete.recipe_name}".`,
+      });
       setRecipeToDelete(null);
     } catch (err) {
       console.error(err);
-      setDeleteError(
-        `Could not delete "${recipeToDelete.recipe_name}". Please try again.`,
-      );
+      setNotice({
+        severity: "error",
+        message: `Could not delete "${recipeToDelete.recipe_name}". Please try again.`,
+      });
     } finally {
       setDeleting(false);
     }
@@ -223,17 +228,17 @@ export default function RecipeTile() {
       />
 
       <Snackbar
-        open={Boolean(deleteError)}
+        open={Boolean(notice)}
         autoHideDuration={6000}
-        onClose={() => setDeleteError("")}
+        onClose={() => setNotice(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
-          severity="error"
+          severity={notice?.severity}
           variant="filled"
-          onClose={() => setDeleteError("")}
+          onClose={() => setNotice(null)}
         >
-          {deleteError}
+          {notice?.message}
         </Alert>
       </Snackbar>
     </Box>
