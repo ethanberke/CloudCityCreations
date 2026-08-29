@@ -19,9 +19,11 @@ Epic/issue, not a commitment.
   `ingredients`/`instructions` rows get cleaned up on delete — no `ON DELETE CASCADE` exists
   today, see [data-model.md](./data-model.md#no-cascade-delete-no-unique-constraints).
 
-- **Submission preview modal**
-  Before final submission on the Contribute page, show a preview (name, style, contributor,
-  ingredients, instructions, image) so users can check formatting before it hits the database.
+- **Submission preview modal** — _done._
+  Submitting the Contribute form opens `SubmissionPreviewModal.jsx` (name, style, contributor,
+  ingredients, instructions, image) and only confirming from it POSTs to `/api/recipes`. The
+  previewed object is the request body, so blank rows are dropped from both rather than only
+  hidden from view.
 
 - **Favorites / upvotes + sorting & filtering**
   Upvote recipes, sort by most-liked, filter/sort by style, contributor, or submission date.
