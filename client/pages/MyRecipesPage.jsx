@@ -156,6 +156,13 @@ export default function MyRecipesPage() {
                   current.filter((recipe) => recipe.recipe_id !== recipeId),
                 )
               }
+              onRecipeUpdated={(updated) =>
+                setRecipes((current) =>
+                  current.map((recipe) =>
+                    recipe.recipe_id === updated.recipe_id ? updated : recipe,
+                  ),
+                )
+              }
             />
           )}
         </>

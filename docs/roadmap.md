@@ -39,11 +39,15 @@ Epic/issue, not a commitment.
   Still open: the route is unauthenticated, so it needs the proxy's user header when #5
   lands.
 
-- **Edit & delete recipes** — _delete UI landed, edit UI and ownership pending._
-  `DELETE /api/recipes/:recipe_id` is wired up from the recipe grid: a delete icon on each
-  tile opens a confirmation modal naming the recipe, and confirming removes the tile without
-  a refetch. Still open: no client calls `PATCH` yet (#20), and neither route checks who is
-  asking — any visitor can delete any recipe until auth lands (#7).
+- **Edit & delete recipes** — _UI done, ownership pending._
+  Both routes are wired up from the recipe grid on `/my-recipes`. Delete puts a confirmation
+  modal naming the recipe on each tile. Edit (#20) turns the detail modal into a prefilled
+  form; saving opens the same preview modal the Contribute page uses, and confirming `PATCH`es
+  and re-reads the recipe so the list matches what was written.
+
+  Owner actions are gated behind `showOwnerActions`, so neither appears on the public landing
+  grid. Still open: neither route checks who is asking — any caller can edit or delete any
+  recipe until auth lands (#7).
 
 - **"My Recipes" page** (#19) — _done._
   `/my-recipes` shows the tile grid filtered to your own contributions, and delete now lives

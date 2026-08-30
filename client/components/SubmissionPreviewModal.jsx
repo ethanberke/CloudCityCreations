@@ -16,6 +16,11 @@ export default function SubmissionPreviewModal({
   onCancel,
   onConfirm,
   submitting = false,
+  title = "Preview your recipe",
+  subtitle = "Nothing is saved until you submit.",
+  cancelLabel = "Keep editing",
+  confirmLabel = "Submit recipe",
+  submittingLabel = "Submitting…",
 }) {
   if (!recipe) return null;
 
@@ -39,10 +44,10 @@ export default function SubmissionPreviewModal({
         }}
       >
         <Typography variant="h5" component="h2" align="center">
-          Preview your recipe
+          {title}
         </Typography>
         <Typography align="center" color="text.secondary" mt={1}>
-          Nothing is saved until you submit.
+          {subtitle}
         </Typography>
 
         <Box sx={{ textAlign: "center" }}>
@@ -101,10 +106,10 @@ export default function SubmissionPreviewModal({
 
         <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
           <Button onClick={onCancel} disabled={submitting}>
-            Keep editing
+            {cancelLabel}
           </Button>
           <Button variant="contained" onClick={onConfirm} disabled={submitting}>
-            {submitting ? "Submitting…" : "Submit recipe"}
+            {submitting ? submittingLabel : confirmLabel}
           </Button>
         </Stack>
       </Box>

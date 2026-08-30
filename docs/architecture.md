@@ -85,6 +85,22 @@ ownership checks either way. Real identity is planned via reverse-proxy forward 
 (see [roadmap.md](./roadmap.md)); until then, don't assume any request is authenticated or
 attribute-checked server-side.
 
+## Shared recipe form
+
+`hooks/useRecipeForm.js` owns the field state, the growable ingredient/step arrays, and the
+staged-photo lifecycle; `components/RecipeForm.jsx` renders the fields. Both the Contribute
+page and the edit view inside the recipe modal (`components/RecipeEditor.jsx`) use them, so
+there is one definition of what a recipe form is.
+
+Two details worth knowing before changing it:
+
+- Reads return `ingredients`/`instructions` as row objects while the form edits plain strings.
+  `recipeToFormValues` converts either shape, which is what lets the same hook back both
+  create and edit.
+- `previewRecipe` drops blank rows and trims, and `buildSubmission` returns that same object
+  with the staged photo uploaded and swapped in. What the preview modal shows is what gets
+  written — that invariant is the reason they're derived from one place.
+
 ## Known duplication: two implementations per route
 
 The frontend has two parallel "pages vs components" implementations left over from
