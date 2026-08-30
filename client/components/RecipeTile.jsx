@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -12,19 +13,23 @@ import {
   ListItemText,
   Modal,
   Snackbar,
+  Stack,
   Typography,
 } from "@mui/material";
 import { resolveImageUrl } from "../utils/image";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import DeleteRecipe from "./DeleteRecipe";
+import RecipeEditor from "./RecipeEditor";
 import RecipeImage from "./RecipeImage";
 
 export default function RecipeTile({
   recipes = [],
   showOwnerActions = false,
   onRecipeDeleted,
+  onRecipeUpdated,
 }) {
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeToDelete, setRecipeToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -37,7 +42,25 @@ export default function RecipeTile({
 
   const handleClose = () => {
     setOpen(false);
+    setEditing(false);
     setSelectedRecipe(null);
+  };
+
+  const handleSaved = (updatedRecipe) => {
+    setSelectedRecipe(updatedRecipe);
+    onRecipeUpdated?.(updatedRecipe);
+    setEditing(false);
+    setNotice({
+      severity: "success",
+      message: `Successfully saved changes to "${updatedRecipe.recipe_name}".`,
+    });
+  };
+
+  const handleSaveError = (recipeName) => {
+    setNotice({
+      severity: "error",
+      message: `Could not save changes to "${recipeName}". Please try again.`,
+    });
   };
 
   const handleDeleteCancel = () => {
@@ -138,8 +161,25 @@ export default function RecipeTile({
             borderRadius: 2,
           }}
         >
-          {selectedRecipe && (
+          {selectedRecipe && editing && (
+            <RecipeEditor
+              recipe={selectedRecipe}
+              onCancel={handleClose}
+              onSaved={handleSaved}
+              onError={handleSaveError}
+            />
+          )}
+
+          {selectedRecipe && !editing && (
             <>
+              {showOwnerActions && (
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button variant="outlined" onClick={() => setEditing(true)}>
+                    Edit recipe
+                  </Button>
+                </Stack>
+              )}
+
               <Box sx={{ textAlign: "center" }}>
                 <Typography variant="h4" mt={2}>
                   {selectedRecipe.recipe_name}
