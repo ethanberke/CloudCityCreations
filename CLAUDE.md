@@ -91,4 +91,8 @@ Import order is enforced by `@ianvs/prettier-plugin-sort-imports` per `prettier.
 
 ### Planned but not yet implemented (per README)
 
-Supabase auth, Supabase image storage, edit/delete UI, submission preview modal, favorites/upvotes, sorting/filtering. Don't assume any of this exists in the code yet — the `PATCH`/`DELETE` API routes are the exception, they've landed (unowned and unauthenticated).
+Auth, image upload, edit UI, favorites/upvotes, sorting/filtering. Don't assume any of this exists in the code yet.
+
+Already landed (don't re-plan these): the `PATCH`/`DELETE` API routes (unowned and unauthenticated), the delete confirmation UI, the submission preview modal, and `/my-recipes`.
+
+The README still describes auth and image storage as "Supabase" — that is out of date. The app is intended to run LAN-only for two people, so the plan is reverse-proxy forward auth and images on local disk in a Docker volume, not a hosted provider. See `docs/architecture.md` → "Deployment model and threat model" before proposing cloud services.

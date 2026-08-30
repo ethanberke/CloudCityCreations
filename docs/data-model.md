@@ -66,7 +66,8 @@ recipes have no owner. `DELETE /api/recipes/:recipe_id` therefore removes the
 cascade later would let both drop those explicit deletes, but nothing depends on that today.
 
 Recipes still have no owner, so neither route can check *who* is deleting — that's blocked on
-Supabase Auth (see [roadmap.md](./roadmap.md)).
+auth (#5, see [roadmap.md](./roadmap.md)). Whatever lands there will add an owner column;
+`contributor` stays as the display name.
 
 ### Nested read shape
 

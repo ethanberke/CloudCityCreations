@@ -150,23 +150,27 @@ Contribute Page
 
 Cloud City Culinary Creations is actively evolving. Planned enhancements include:
 
-### 🔐 Authentication & User Accounts (Supabase)
-- Full authentication flow powered by **Supabase Auth**
-- Users can create accounts and log in to manage their own recipes
-- Admin-level permissions for elevated management capabilities
+### 🔐 Authentication & User Accounts
+- Login handled by a **reverse proxy** (Authelia/Authentik) on the same host, not a hosted
+  provider — the app runs on a private LAN and shouldn't depend on an internet service to let
+  anyone in
+- The proxy passes the authenticated username to Express, so recipes gain a real owner and
+  `contributor` stops being free text
+- Requires the server port to be reachable only through the proxy
 
 ### 🖼 Image Upload Support
-- Direct image uploads instead of relying on external URLs
-- Secure storage via **Supabase Storage**
-- Automatic image optimization and previewing
+- Upload a photo **or** paste a link — both end up as a string in `image_url`
+- Stored on local disk in a Docker volume, served by the app itself
+- The browser downscales and re-encodes before upload, which keeps files small and strips the
+  GPS coordinates out of photos taken at home
 
-### ✏️ Edit & Delete Recipes
+### ✏️ Edit & Delete Recipes — _delete shipped, edit pending_
 - Users can edit or delete recipes they have submitted
 - Admins can edit or remove any recipe in the system
 - UI updates to clearly show ownership and available actions
 
-### 👀 Submission Preview Modal
-- When contributing a recipe, users will see a **preview modal** before final submission
+### 👀 Submission Preview Modal — _shipped_
+- When contributing a recipe, users see a **preview modal** before final submission
 - Displays:
   - Recipe name  
   - Style  
@@ -181,4 +185,6 @@ Cloud City Culinary Creations is actively evolving. Planned enhancements include
 - Upvote option on recipe tiles for users to be able to sort by most liked recipes
 - Sorting and filtering options (by style, contributor, date of submission)
 
-These features will continue to expand the app into a fully interactive, community-driven recipe platform.
+These are scoped to a household plus, at most, a small workplace group — not a public
+platform. See `docs/architecture.md` for why that constraint drives several of the choices
+above.
