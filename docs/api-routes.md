@@ -55,10 +55,14 @@ run as separate processes on `5173`/`5000` and CORS is opened only for
 ## Notes
 
 - No auth on any route — every request is treated as trusted. `contributor` is a free-text
-  field the client sends, not a verified identity. This is scoped to change once Supabase Auth
-  lands (see [roadmap.md](./roadmap.md)).
+  field the client sends, not a verified identity. This is scoped to change once forward auth
+  lands (#5, see [roadmap.md](./roadmap.md)); the app is meanwhile expected to be reachable
+  only from a private LAN (see
+  [architecture.md](./architecture.md#deployment-model-and-threat-model)).
 - `PATCH`/`DELETE` exist but are unauthenticated and unowned — any caller can edit or delete
-  any recipe. Ownership checks are blocked on Supabase Auth (see [roadmap.md](./roadmap.md)).
+  any recipe. Ownership checks are blocked on auth (#7, see [roadmap.md](./roadmap.md)). The
+  delete button was moved off the public landing grid onto `/my-recipes`, which removes the
+  accident, not the hole.
 - No query params for filtering/sorting/pagination — `GET /api/recipes` always returns
   everything.
 - Response shapes aren't versioned or validated against a schema (no Zod/Joi/etc.) — the

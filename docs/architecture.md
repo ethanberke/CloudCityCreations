@@ -55,11 +55,34 @@ part-way through rolls back instead of orphaning a `recipes` row. `PATCH` and `D
 post-build, so in a deployed setting `client` and `server` can be the same origin — CORS is
 currently locked to `localhost:5173` / `127.0.0.1:5173` for local dev only.
 
+## Deployment model and threat model
+
+**Today:** two users on a private home network, reachable only from that LAN (a hidden SSID),
+never exposed to the public internet.
+
+**Where it's headed:** self-hosted in a homelab and opened to a small group of coworkers over
+the LAN or a VPN. Not a public platform, and not built to go past that.
+
+That ceiling is why several choices here look under-engineered on purpose: local disk instead
+of object storage for images, a reverse proxy instead of a hosted identity provider, no CDN,
+no rate limiting, no pagination. Read those as deliberate, not as gaps waiting to be filled.
+
+The one that isn't optional is auth. While the only two people who can reach the app are
+trusted, unauthenticated write routes are an accident risk at worst. The moment anyone else
+gets access, `PATCH`/`DELETE` being open to any caller becomes a real hole — so #5 lands
+before other people do, not after.
+
+Nothing currently deploys it: CI pushes images to Docker Hub and no host pulls them.
+
 ## No auth (yet)
 
 There is no `users` table and no login flow. Every visitor can view and submit recipes;
-contributor name is a free-text field, not an identity. Supabase Auth is the planned addition
-(see [roadmap.md](./roadmap.md)) — until then, don't assume any request is authenticated or
+contributor name is a free-text field, not an identity.
+
+`client/utils/contributor.js` holds a name in `localStorage` so `/my-recipes` has something to
+filter on. That is attribution, not authentication — nothing verifies it, and the API has no
+ownership checks either way. Real identity is planned via reverse-proxy forward auth
+(see [roadmap.md](./roadmap.md)); until then, don't assume any request is authenticated or
 attribute-checked server-side.
 
 ## Known duplication: two implementations per route
@@ -93,5 +116,5 @@ There is no test suite configured in either workspace, and no deploy step past t
 - Whether to delete `pages/HomePage.jsx` and `components/Recipes.jsx` outright or migrate
   `/recipes` onto `RecipeTile.jsx`'s pattern — flag this rather than assuming either is
   intentional if asked to consolidate.
-- Image storage strategy once Supabase Storage lands — current `image_url` is just a free-text
-  external URL with a local fallback image in the UI.
+- Which forward-auth stack to run (Authelia vs Authentik) and whether the homelab already has
+  a reverse proxy to hang it off — decided when homelab hosting is actually on the table (#5).
