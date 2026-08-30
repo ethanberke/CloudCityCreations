@@ -18,9 +18,9 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { ColorModeContext } from "./DarkMode";
 
+// Contribute is deliberately absent — the "+" Fab below already goes there.
 const pages = [
-  { label: "Recipes", to: "/recipes" },
-  { label: "Contribute", to: "/contribute" },
+  { label: "My Recipes", to: "/my-recipes" },
   { label: "About", to: "/about" },
 ];
 
