@@ -13,8 +13,10 @@ import {
   UPLOAD_URL_PREFIX,
 } from "./lib/images.js";
 
-dotenv.config({ path: "../.env" });
-console.log("DB URL:", process.env.DATABASE_URL);
+// Reads server/.env — resolved from the working directory, which npm workspaces
+// and the Docker WORKDIR both set to the server directory. It deliberately no
+// longer reaches up to the root .env: that file also carried a GitHub PAT (#27).
+dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const sql = postgres(process.env.DATABASE_URL);

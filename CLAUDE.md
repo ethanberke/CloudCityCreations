@@ -43,15 +43,20 @@ psql -d recipes -f server/migration.sql   # drops/recreates tables and seeds sam
 ### GitHub authentication
 
 A fine-grained PAT for `gh`/`git` operations (commits, pushes, issues, PRs, Actions) lives in
-a root-level `.env` as `GH_TOKEN` — gitignored (`**/.env`). Source it from that file before
-running `gh` commands; never print its value.
+a root-level `.env.tooling` as `GH_TOKEN`. Source it explicitly before running `gh` commands
+(`set -a; source .env.tooling; set +a`); never print its value.
 
-**The separation this file used to claim doesn't exist (#27).** The root `.env` also holds
-`DATABASE_URL` and the `POSTGRES_*` vars, `server/.env` is an empty file, and
-`client/vite.config.js` calls `dotenv.config({ path: "../.env" })` — so the PAT is loaded into
-both the server's and the Vite build's process environment. Nothing leaks today, since Vite
-only inlines `VITE_`-prefixed vars and the built bundle is clean, but the boundary is a naming
-convention rather than an actual barrier.
+**The boundary is real now (#27), not a naming convention.** There is no repo-root `.env` at
+all — `server/.env` holds the app config and is the only file the server reads
+(`dotenv.config()`, resolved from the working directory), and `client/vite.config.js` reads no
+env whatsoever. `.env.tooling` is loaded by nothing but the shell, so the PAT cannot reach the
+server's or the Vite build's process environment even by accident.
+
+`.gitignore` ignores every `.env*` variant and re-includes only `*.env.template`, so a new
+secrets file is ignored by default rather than needing a new rule. Each of `client/` and
+`server/` has its own `.env` (see the `.env.template` beside it); `compose.yaml` overrides
+`POSTGRES_HOST`/`DATABASE_URL` for the containerised server, since `server/.env` carries
+`localhost` values for host-side `npm run dev`.
 
 ### Docker
 
@@ -83,14 +88,11 @@ Single-file Express server, no router modules, no ORM/query builder — uses `po
 
 Entry: `index.jsx` → wraps `App` in `ThemeWrapper` (`components/DarkMode.jsx`, MUI light/dark theme + `ColorModeContext`) → `App.jsx` defines routes with `react-router-dom`.
 
-Routes (`App.jsx`): `/` → `components/Landing.jsx`, `/recipes` → `pages/RecipesPage.jsx`, `/contribute` → `pages/ContributePage.jsx`, `/about` → `pages/About.jsx`. `Navbar` is rendered outside `<Routes>` so it's present on every page.
+Routes (`App.jsx`): `/` → `components/Landing.jsx`, `/my-recipes` → `pages/MyRecipesPage.jsx`, `/contribute` → `pages/ContributePage.jsx`, `/about` → `pages/About.jsx`. `Navbar` is rendered outside `<Routes>` so it's present on every page.
 
-Two parallel "pages vs components" implementations exist for the same routes — this is left over from in-progress refactoring, not an intentional pattern:
+The "pages vs components" duplication left over from an earlier refactor is **gone**. `pages/HomePage.jsx` was deleted previously; `pages/RecipesPage.jsx` + `components/Recipes.jsx` (a bare `<select>` of recipe names, unlinked from the navbar since #17) were deleted once the landing grid gained filtering in #10, which is what `/recipes` had been for. There is now one implementation per route.
 
-- `components/Landing.jsx` (MUI, fetches `/api/recipes`, renders `RecipeTile`) is what's actually wired to `/` — `pages/HomePage.jsx` (plain HTML, unstyled) is not used anywhere.
-- `pages/RecipesPage.jsx` + `components/Recipes.jsx` (plain `<select>` of recipe names, minimal) is what's wired to `/recipes`, and is far less developed than `components/RecipeTile.jsx`'s grid+modal view used on the landing page.
-
-When extending recipe browsing/detail UI, prefer building on `RecipeTile.jsx`'s pattern (MUI `Card`/`Grid`/`Modal`) over `Recipes.jsx`. If asked to consolidate, flag the `HomePage.jsx`/`Recipes.jsx` duplication rather than assuming it's intentional.
+When extending recipe browsing/detail UI, build on `RecipeTile.jsx`'s pattern (MUI `Card`/`Grid`/`Modal`).
 
 `RecipeTile.jsx` fetches `/api/recipes` independently of `Landing.jsx` (which also fetches and passes `recipes` as a prop it doesn't use) — another artifact of the in-progress refactor.
 

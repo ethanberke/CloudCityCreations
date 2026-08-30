@@ -102,20 +102,20 @@ Two details worth knowing before changing it:
   with the staged photo uploaded and swapped in. What the preview modal shows is what gets
   written — that invariant is the reason they're derived from one place.
 
-## Known duplication: two implementations per route
+## Frontend: one implementation per route
 
-The frontend has two parallel "pages vs components" implementations left over from
-in-progress refactoring — not an intentional pattern:
+The "pages vs components" duplication left over from an earlier refactor has been removed.
+`pages/HomePage.jsx` went first; `pages/RecipesPage.jsx` + `components/Recipes.jsx` — a bare
+`<select>` of recipe names, wired to `/recipes` and unlinked from the navbar since #17 —
+followed once the landing grid gained filtering (#10), which is what that page had been for.
+The `/recipes` route is gone with them.
 
-- `components/Landing.jsx` (MUI, fetches `/api/recipes`, renders `RecipeTile`) is wired to
-  `/`. `pages/HomePage.jsx` (plain unstyled HTML) exists but is **not routed anywhere**.
-- `pages/RecipesPage.jsx` + `components/Recipes.jsx` (a bare `<select>` of recipe names) is
-  wired to `/recipes`, and is far less developed than `RecipeTile.jsx`'s grid+modal view used
-  on the landing page.
-
-When extending recipe browsing/detail UI, build on `RecipeTile.jsx`'s pattern (MUI
-`Card`/`Grid`/`Modal`), not `Recipes.jsx`. See [data-model.md](./data-model.md) for the schema
-these components consume and [api-routes.md](./api-routes.md) for the endpoints they call.
+Recipe browsing and detail now live in one place: `components/Landing.jsx` fetches
+`/api/recipes` with the filter params and renders `components/RecipeTile.jsx`'s grid + modal,
+with `components/RecipeFilters.jsx` above it. `/my-recipes` reuses the same `RecipeTile` with
+`showOwnerActions` set. Build new browsing UI on that pattern. See
+[data-model.md](./data-model.md) for the schema these components consume and
+[api-routes.md](./api-routes.md) for the endpoints they call.
 
 ## CI/CD
 
@@ -130,8 +130,9 @@ There is no test suite configured in either workspace, and no deploy step past t
 
 ## Open questions / decide-later
 
-- Whether to delete `pages/HomePage.jsx` and `components/Recipes.jsx` outright or migrate
-  `/recipes` onto `RecipeTile.jsx`'s pattern — flag this rather than assuming either is
-  intentional if asked to consolidate.
-- Whether to split `GH_TOKEN` out of the root `.env`, which currently also carries the
-  database credentials and is read by both the server and the Vite build (#27).
+- Whether the containerised `server` service is exercised at all. `compose.yaml` now sets
+  `POSTGRES_HOST`/`DATABASE_URL` explicitly for it, but day-to-day work runs only the `db`
+  service in Docker with the client and server on the host, so the full-stack path is the
+  least-tested one.
+- Whether `contributor` should stay free text once #5 lands, or collapse into the
+  authenticated username. `docs/data-model.md` assumes it stays as a display name.

@@ -1,4 +1,13 @@
 /node_modules/
-**/.env
 /client/dist
 /server/uploads/
+
+# Every .env variant is ignored by default rather than listed one at a time —
+# the previous `**/.env` matched only that exact name, so a new file like
+# .env.tooling would have been committed. Templates are the one exception.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.template
+!**/.env.template

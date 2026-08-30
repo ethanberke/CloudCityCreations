@@ -69,16 +69,21 @@ Users can add their own creations through the Contribute page:
 
 ```text
 client/          # React front-end
+client/.env      # VITE_API_URL           (copy from client/.env.template)
 server/          # Express back-end
+server/.env      # PORT, DATABASE_URL, …  (copy from server/.env.template)
 migration.sql    # Seed data for recipes, ingredients, instructions
-.env             # Environment variables
+.env.tooling     # GH_TOKEN for gh/git — sourced by the shell, read by nothing in the app
 ```
 
-Create a `.env` file in the **client** directory using the `.env.template` file
+Create a `.env` in **both** `client/` and `server/`, each from the `.env.template` beside it.
+There is no repo-root `.env`: the server reads only `server/.env` and Vite reads only
+`client/.env`, so no credential is shared between them.
 ### Notes
 - `DATABASE_URL` must match your local PostgreSQL credentials  
 - `PORT` is the Express server port  
 - `VITE_API_URL` must point to your backend API root  
+- `GH_TOKEN` is not app config — keep it in `.env.tooling` and source it explicitly  
 
 ---
 
