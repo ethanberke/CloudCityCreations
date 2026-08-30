@@ -4,9 +4,11 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
+import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { getContributorName, setContributorName } from "../utils/contributor";
+import { IMAGE_ACCEPT, prepareImage, uploadImage } from "../utils/image";
 import SubmissionPreviewModal from "./SubmissionPreviewModal";
 
 const Contribute = ({ onRecipeSubmit }) => {
@@ -25,7 +27,47 @@ const Contribute = ({ onRecipeSubmit }) => {
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState(null);
 
+  const [imageBlob, setImageBlob] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageError, setImageError] = useState(null);
+  const [processingImage, setProcessingImage] = useState(false);
+
   useEffect(() => () => clearTimeout(redirectTimer.current), []);
+
+  useEffect(() => {
+    if (!imagePreview) return undefined;
+    return () => URL.revokeObjectURL(imagePreview);
+  }, [imagePreview]);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    // Reset so picking the same file twice still fires a change event.
+    e.target.value = "";
+    if (!file) return;
+
+    setImageError(null);
+    setProcessingImage(true);
+
+    try {
+      const blob = await prepareImage(file);
+      setImageBlob(blob);
+      setImagePreview(URL.createObjectURL(blob));
+      setNewRecipe((current) => ({ ...current, image_url: "" }));
+    } catch (err) {
+      console.error(err);
+      setImageBlob(null);
+      setImagePreview(null);
+      setImageError(err.message);
+    } finally {
+      setProcessingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageBlob(null);
+    setImagePreview(null);
+    setImageError(null);
+  };
 
   // What the preview shows is exactly what gets submitted: blank ingredient
   // and step rows are dropped here rather than only being hidden from view.
@@ -37,6 +79,10 @@ const Contribute = ({ onRecipeSubmit }) => {
     image_url: newRecipe.image_url.trim(),
     ingredients: newRecipe.ingredients.map((i) => i.trim()).filter(Boolean),
     instructions: newRecipe.instructions.map((s) => s.trim()).filter(Boolean),
+    // A staged photo previews from a blob URL that only exists in this tab.
+    // The bytes are what get uploaded; the string is swapped for the stored
+    // path in handleConfirmSubmit.
+    image_url: imagePreview ?? newRecipe.image_url.trim(),
   };
 
   const handleAddIngredient = () => {
@@ -75,7 +121,11 @@ const Contribute = ({ onRecipeSubmit }) => {
     setSubmitting(true);
 
     try {
-      await onRecipeSubmit(previewRecipe);
+      const image_url = imageBlob
+        ? await uploadImage(imageBlob)
+        : previewRecipe.image_url;
+
+      await onRecipeSubmit({ ...previewRecipe, image_url });
       // Remembered so My Recipes has a name to filter on until auth lands.
       setContributorName(previewRecipe.contributor);
       setPreviewOpen(false);
@@ -143,11 +193,59 @@ const Contribute = ({ onRecipeSubmit }) => {
         value={newRecipe.style}
         onChange={(e) => setNewRecipe({ ...newRecipe, style: e.target.value })}
       />
+      <Stack spacing={1} alignItems="center" sx={{ width: "50ch", mt: 1 }}>
+        <Button
+          variant="outlined"
+          component="label"
+          disabled={processingImage}
+          sx={{ width: "22ch" }}
+        >
+          {processingImage ? "Processing…" : "Upload a photo"}
+          <input
+            hidden
+            type="file"
+            accept={IMAGE_ACCEPT}
+            onChange={handleFileChange}
+          />
+        </Button>
+
+        {imagePreview && (
+          <>
+            <Box
+              component="img"
+              src={imagePreview}
+              alt="Selected recipe photo"
+              sx={{
+                width: "100%",
+                maxHeight: 220,
+                objectFit: "cover",
+                borderRadius: 1,
+              }}
+            />
+            <Button size="small" color="error" onClick={handleRemoveImage}>
+              Remove photo
+            </Button>
+          </>
+        )}
+
+        {imageError && (
+          <Alert severity="error" sx={{ width: "100%" }}>
+            {imageError}
+          </Alert>
+        )}
+      </Stack>
+
       <TextField
         sx={{ width: "50ch", margin: "10px 0" }}
         name="image_url"
         label="Image URL"
         variant="filled"
+        disabled={Boolean(imagePreview)}
+        helperText={
+          imagePreview
+            ? "Using the uploaded photo. Remove it to paste a link instead."
+            : "Or paste a link to an existing image."
+        }
         value={newRecipe.image_url}
         onChange={(e) =>
           setNewRecipe({ ...newRecipe, image_url: e.target.value })

@@ -1,7 +1,17 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import multer from "multer";
 import postgres from "postgres";
+import {
+  deleteImageIfLocal,
+  ensureUploadDir,
+  MAX_UPLOAD_BYTES,
+  saveImage,
+  sniffImage,
+  UPLOAD_DIR,
+  UPLOAD_URL_PREFIX,
+} from "./lib/images.js";
 
 dotenv.config({ path: "../.env" });
 console.log("DB URL:", process.env.DATABASE_URL);
@@ -19,6 +29,55 @@ app.use(
 );
 
 app.use(express.static("../client/dist"));
+
+await ensureUploadDir();
+
+// Uploaded photos are served under the API base so the existing VITE_API_URL
+// resolves them without any new client config. nosniff matters because these
+// are user-supplied bytes coming back from our own origin.
+app.use(
+  "/api/uploads",
+  express.static(UPLOAD_DIR, {
+    index: false,
+    dotfiles: "ignore",
+    setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),
+  }),
+);
+
+// Kept in memory so the bytes can be inspected before anything is written to
+// disk — nothing untrusted gets a filename until it's confirmed to be an image.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 },
+});
+
+app.post("/api/uploads", (req, res) => {
+  upload.single("image")(req, res, async (err) => {
+    if (err) {
+      const tooLarge = err.code === "LIMIT_FILE_SIZE";
+      return res.status(tooLarge ? 413 : 400).json({
+        error: tooLarge ? "Image is too large" : "Invalid upload",
+      });
+    }
+
+    if (!req.file) return res.status(400).json({ error: "No image provided" });
+
+    const signature = sniffImage(req.file.buffer);
+    if (!signature) {
+      return res
+        .status(415)
+        .json({ error: "Unsupported image type. Use JPEG, PNG, or WebP." });
+    }
+
+    try {
+      const filename = await saveImage(req.file.buffer, signature.ext);
+      res.status(201).json({ url: `${UPLOAD_URL_PREFIX}${filename}` });
+    } catch (error) {
+      console.error("Error saving upload:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+});
 
 // Shared column list for both recipe reads below — each recipe's ingredients/instructions
 // are pulled in as a single scalar json_agg per row, so there's no join-row multiplication
@@ -122,6 +181,7 @@ app.post("/api/recipes", async (req, res) => {
 
 app.patch("/api/recipes/:recipe_id", async (req, res) => {
   const recipeId = req.params.recipe_id;
+  let replacedImage = null;
   const {
     contributor,
     recipe_name,
@@ -133,6 +193,10 @@ app.patch("/api/recipes/:recipe_id", async (req, res) => {
 
   try {
     const updated = await sql.begin(async (sql) => {
+      const previous = await sql`
+        SELECT image_url FROM recipes WHERE id = ${recipeId}
+      `;
+
       const recipeResult = await sql`
         UPDATE recipes
         SET contributor = ${contributor},
@@ -144,6 +208,9 @@ app.patch("/api/recipes/:recipe_id", async (req, res) => {
       `;
 
       if (recipeResult.length === 0) return false;
+
+      replacedImage =
+        previous[0].image_url === image_url ? null : previous[0].image_url;
 
       await sql`DELETE FROM ingredients WHERE recipe_id = ${recipeId}`;
       await sql`DELETE FROM instructions WHERE recipe_id = ${recipeId}`;
@@ -167,6 +234,9 @@ app.patch("/api/recipes/:recipe_id", async (req, res) => {
 
     if (!updated) return res.sendStatus(404);
 
+    // Only after the transaction commits — an unlink can't be rolled back.
+    await deleteImageIfLocal(replacedImage);
+
     res.json({ message: "Recipe updated", recipe_id: recipeId });
   } catch (error) {
     console.error("Error updating recipe:", error);
@@ -183,13 +253,15 @@ app.delete("/api/recipes/:recipe_id", async (req, res) => {
       await sql`DELETE FROM instructions WHERE recipe_id = ${recipeId}`;
 
       const recipeResult = await sql`
-        DELETE FROM recipes WHERE id = ${recipeId} RETURNING id
+        DELETE FROM recipes WHERE id = ${recipeId} RETURNING id, image_url
       `;
 
-      return recipeResult.length > 0;
+      return recipeResult.length > 0 ? recipeResult[0] : null;
     });
 
     if (!deleted) return res.sendStatus(404);
+
+    await deleteImageIfLocal(deleted.image_url);
 
     res.json({ message: "Recipe deleted", recipe_id: recipeId });
   } catch (error) {

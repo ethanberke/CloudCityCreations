@@ -24,6 +24,10 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      # Uploaded photos land in ./server/uploads on the host through this bind
+      # mount, so they survive rebuilds and are the same files whether the
+      # server runs here or via `npm run dev`. A deploy without this mount needs
+      # a named volume at /app/uploads instead, or photos vanish on rebuild.
       - ./server:/app
       - /app/node_modules
 

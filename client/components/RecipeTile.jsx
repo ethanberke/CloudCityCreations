@@ -11,12 +11,13 @@ import {
   ListItem,
   ListItemText,
   Modal,
-  Paper,
   Snackbar,
   Typography,
 } from "@mui/material";
+import { resolveImageUrl } from "../utils/image";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import DeleteRecipe from "./DeleteRecipe";
+import RecipeImage from "./RecipeImage";
 
 export default function RecipeTile({
   recipes = [],
@@ -91,7 +92,7 @@ export default function RecipeTile({
                 <CardMedia
                   component="img"
                   height="175"
-                  image={recipe.image_url || "/images/grogu_peak.jpg"}
+                  image={resolveImageUrl(recipe.image_url)}
                   alt={recipe.recipe_name}
                 />
                 <CardContent
@@ -150,25 +151,10 @@ export default function RecipeTile({
                   Style: {selectedRecipe.style}
                 </Typography>
               </Box>
-              <Paper elevation={8}>
-                <CardMedia
-                  component="img"
-                  image={selectedRecipe.image_url || "/images/grogu_peak.jpg"}
-                  alt={selectedRecipe.recipe_name}
-                  sx={{
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: 300,
-                    objectFit: "cover",
-                    borderRadius: 2,
-                    my: 2,
-                  }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/images/grogu_peak.jpg";
-                  }}
-                />
-              </Paper>
+              <RecipeImage
+                imageUrl={selectedRecipe.image_url}
+                alt={selectedRecipe.recipe_name}
+              />
 
               <Typography>Ingredients</Typography>
               <List sx={{ listStyleType: "disc", pl: 4 }}>
