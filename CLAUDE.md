@@ -43,9 +43,15 @@ psql -d recipes -f server/migration.sql   # drops/recreates tables and seeds sam
 ### GitHub authentication
 
 A fine-grained PAT for `gh`/`git` operations (commits, pushes, issues, PRs, Actions) lives in
-a root-level `.env` as `GH_TOKEN` — gitignored (`**/.env`), separate from `server/.env` and
-`client/.env` since it's tooling-only and shouldn't be loaded into the running app's process
-env. Source it from that file before running `gh` commands; never print its value.
+a root-level `.env` as `GH_TOKEN` — gitignored (`**/.env`). Source it from that file before
+running `gh` commands; never print its value.
+
+**The separation this file used to claim doesn't exist (#27).** The root `.env` also holds
+`DATABASE_URL` and the `POSTGRES_*` vars, `server/.env` is an empty file, and
+`client/vite.config.js` calls `dotenv.config({ path: "../.env" })` — so the PAT is loaded into
+both the server's and the Vite build's process environment. Nothing leaks today, since Vite
+only inlines `VITE_`-prefixed vars and the built bundle is clean, but the boundary is a naming
+convention rather than an actual barrier.
 
 ### Docker
 
