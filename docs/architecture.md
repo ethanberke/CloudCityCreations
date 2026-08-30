@@ -116,5 +116,5 @@ There is no test suite configured in either workspace, and no deploy step past t
 - Whether to delete `pages/HomePage.jsx` and `components/Recipes.jsx` outright or migrate
   `/recipes` onto `RecipeTile.jsx`'s pattern — flag this rather than assuming either is
   intentional if asked to consolidate.
-- Which forward-auth stack to run (Authelia vs Authentik) and whether the homelab already has
-  a reverse proxy to hang it off — decided when homelab hosting is actually on the table (#5).
+- Whether to split `GH_TOKEN` out of the root `.env`, which currently also carries the
+  database credentials and is read by both the server and the Vite build (#27).

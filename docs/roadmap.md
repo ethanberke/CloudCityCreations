@@ -21,6 +21,10 @@ Epic/issue, not a commitment.
   opening the app to coworkers — see
   [architecture.md](./architecture.md#deployment-model-and-threat-model).
 
+  Stack decided in #5: Caddy + Authelia on a Proxmox VM, with real certificates via the
+  DNS-01 ACME challenge (no port forwarding) and a Pi-hole local DNS record pointing the
+  hostname at the LAN IP.
+
 - **Image upload** (#6 server, #24 client)
   Upload a photo instead of pasting an `image_url` link — both stay supported, since they
   produce the same thing: a string in `image_url`.
