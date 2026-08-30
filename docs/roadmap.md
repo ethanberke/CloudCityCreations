@@ -79,14 +79,18 @@ Epic/issue, not a commitment.
 
 ## Tech debt (not in the README, found while documenting the code)
 
-- **Consolidate the duplicate `/` and `/recipes` implementations.** `pages/HomePage.jsx` is
-  dead code (unrouted); `components/Recipes.jsx` (bare `<select>`) is far less developed than
-  `RecipeTile.jsx`'s grid+modal pattern used on the landing page. `/recipes` is still routed
-  but no longer linked from the navbar (#17), so deleting both is now a smaller decision than
-  it was. See
-  [architecture.md](./architecture.md#known-duplication-two-implementations-per-route).
+- ~~**Consolidate the duplicate `/` and `/recipes` implementations.**~~ _Done._
+  `pages/HomePage.jsx`, `pages/RecipesPage.jsx` and `components/Recipes.jsx` are deleted along
+  with the `/recipes` route. The landing grid gaining filtering (#10) removed the last reason
+  that page existed, and the navbar had not linked it since #17. See
+  [architecture.md](./architecture.md#frontend-one-implementation-per-route).
+- ~~**Root `.env` mixes the GitHub PAT with app config** (#27).~~ _Done._
+  `GH_TOKEN` moved to `.env.tooling`, read only by the shell. The repo-root `.env` is gone:
+  `server/.env` is the server's only config source, and `client/vite.config.js` no longer
+  calls `dotenv` at all. `.gitignore` now ignores every `.env*` variant by default.
 - **No test suite in either workspace.** CI currently only runs ESLint + Prettier
-  (`.github/workflows/cicd.yml`) — no test job exists to add to.
+  (`.github/workflows/cicd.yml`) — no test job exists to add to. This is now the largest
+  remaining item here: #10 and #27 were both verified by hand, and none of that is captured.
 
 ## Explicitly out of scope for now
 

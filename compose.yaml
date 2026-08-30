@@ -18,6 +18,13 @@ services:
     build: ./server
     env_file:
       - ./server/.env
+    environment:
+      # server/.env holds localhost values so host-side `npm run dev` works;
+      # inside compose the database is the `db` service. `environment` wins over
+      # `env_file`, so one file serves both. These duplicate the dev-only
+      # credentials already hardcoded on the `db` service below — no new secret.
+      POSTGRES_HOST: db
+      DATABASE_URL: postgres://postgres:password@db:5432/mydb
     container_name: node_server
     depends_on:
       - db
