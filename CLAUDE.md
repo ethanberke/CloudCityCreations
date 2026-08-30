@@ -65,13 +65,13 @@ CI (`.github/workflows/cicd.yml`) runs ESLint + Prettier for both workspaces on 
 
 ### Data model
 
-Three tables, one-to-many from `recipes`: `recipes(id, contributor, recipe_name, style, image_url)`, `ingredients(id, recipe_id, ingredient)`, `instructions(id, recipe_id, step_order, step)`. There is no `users`/auth table yet.
+Three tables, one-to-many from `recipes`: `recipes(id, contributor, recipe_name, style, image_url, created_at)`, `ingredients(id, recipe_id, ingredient)`, `instructions(id, recipe_id, step_order, step)`. There is no `users`/auth table yet. `created_at` defaults to `now()` and is never written explicitly — `PATCH` leaves it alone, so it means "submitted", not "last touched".
 
 ### API (`server/server.js`)
 
 Single-file Express server, no router modules, no ORM/query builder — uses `postgres` tagged-template SQL directly.
 
-- `GET /api/recipes` — all recipes, each with `ingredients` and `instructions` aggregated via correlated subqueries (`json_agg`) into nested JSON.
+- `GET /api/recipes` — recipes, each with `ingredients` and `instructions` aggregated via correlated subqueries (`json_agg`) into nested JSON. Optional query params: `style` and `contributor` (case-insensitive exact match, matching the `lower(...)` indexes in `migration.sql`), and `sort` (`newest` default, `oldest`, `name`, `contributor`; unknown values `400`). Sort fragments are a fixed lookup map — nothing from the URL is interpolated as an identifier.
 - `GET /api/recipes/:recipe_id` — same shape, single recipe.
 - `POST /api/recipes` — inserts into `recipes`, then loops individual `INSERT`s into `ingredients` and `instructions`, all inside `sql.begin(...)` so a partial insert rolls back.
 - `PATCH /api/recipes/:recipe_id` — replaces the recipe and re-inserts all of its children (not a merge — `step_order` is renumbered from the new array). Every field is required: `postgres` rejects `undefined`, so a partial body 500s and rolls back rather than clearing columns.
@@ -86,6 +86,7 @@ Entry: `index.jsx` → wraps `App` in `ThemeWrapper` (`components/DarkMode.jsx`,
 Routes (`App.jsx`): `/` → `components/Landing.jsx`, `/recipes` → `pages/RecipesPage.jsx`, `/contribute` → `pages/ContributePage.jsx`, `/about` → `pages/About.jsx`. `Navbar` is rendered outside `<Routes>` so it's present on every page.
 
 Two parallel "pages vs components" implementations exist for the same routes — this is left over from in-progress refactoring, not an intentional pattern:
+
 - `components/Landing.jsx` (MUI, fetches `/api/recipes`, renders `RecipeTile`) is what's actually wired to `/` — `pages/HomePage.jsx` (plain HTML, unstyled) is not used anywhere.
 - `pages/RecipesPage.jsx` + `components/Recipes.jsx` (plain `<select>` of recipe names, minimal) is what's wired to `/recipes`, and is far less developed than `components/RecipeTile.jsx`'s grid+modal view used on the landing page.
 
@@ -99,8 +100,10 @@ Import order is enforced by `@ianvs/prettier-plugin-sort-imports` per `prettier.
 
 ### Planned but not yet implemented (per README)
 
-Auth, image upload, edit UI, favorites/upvotes, sorting/filtering. Don't assume any of this exists in the code yet.
+Auth and favorites/upvotes. Don't assume either exists in the code yet.
 
-Already landed (don't re-plan these): the `PATCH`/`DELETE` API routes (unowned and unauthenticated), the delete confirmation UI, the submission preview modal, and `/my-recipes`.
+Already landed (don't re-plan these): the `PATCH`/`DELETE` API routes (unowned and unauthenticated), the delete confirmation UI, the submission preview modal, `/my-recipes`, image upload, the edit-recipe modal, and sorting/filtering (#10).
+
+Sorting/filtering is server-side: `components/RecipeFilters.jsx` sits above the grid on the landing page and drives query params on `GET /api/recipes`. Its dropdown options are built from the first _unfiltered_ response — rebuilding them from a filtered one would remove the option just chosen. `/my-recipes` still filters client-side by `localStorage` name (`utils/contributor.js`); that's a different mechanism, not an oversight.
 
 The README still describes auth and image storage as "Supabase" — that is out of date. The app is intended to run LAN-only for two people, so the plan is reverse-proxy forward auth and images on local disk in a Docker volume, not a hosted provider. See `docs/architecture.md` → "Deployment model and threat model" before proposing cloud services.

@@ -9,8 +9,14 @@ CREATE TABLE recipes (
   contributor TEXT NOT NULL,
   recipe_name TEXT NOT NULL,
   style TEXT NOT NULL,
-  image_url TEXT
+  image_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Filtering is case-insensitive (style/contributor are free text), so the index
+-- has to be on the same lower() expression the query uses or it won't be used.
+CREATE INDEX recipes_style_lower_idx ON recipes (lower(style));
+CREATE INDEX recipes_contributor_lower_idx ON recipes (lower(contributor));
 
 -- Create ingredients table
 CREATE TABLE ingredients (
@@ -30,14 +36,16 @@ CREATE TABLE instructions (
 );
 
 -- Insert into recipes table
-INSERT INTO recipes (contributor, recipe_name, style, image_url)
+-- Staggered so sorting by submission date is visible on a freshly seeded database;
+-- inserted in one statement they would all share the same now().
+INSERT INTO recipes (contributor, recipe_name, style, image_url, created_at)
 VALUES 
-  ('McKade C.', 'Amish Soft Pretzels', 'Side', 'https://bethbryan.com/wp-content/uploads/2013/02/IMG_3935-1024x682.jpg'),
-  ('Tim D.', 'Instant Pot Shredded Beef Nachos', 'Main Dish', 'https://hips.hearstapps.com/hmg-prod/images/190423-instant-pot-nachos-191-1556728757.jpg'),
-  ('Mitchell', 'Pad Thai', 'Thai', 'https://hot-thai-kitchen.com/wp-content/uploads/2019/09/pad-thai-blog.jpg'),
-  ('Mitchell', 'Creamy Garlic Pork Chops', 'Main Dish', 'https://www.saltandlavender.com/wp-content/uploads/2020/07/creamy-garlic-pork-chops-1-1024x1536.jpg'),
-  ('Ethan B.', 'Crushed Potatoes with Spring Onions and Cheese', 'English', 'https://cdn-images.the-express.com/img/dynamic/39/590x/118267_1.jpg'),
-  ('Danny', 'Just Okay Beef Stew', 'American', 'https://www.budgetbytes.com/wp-content/uploads/2023/02/Slow-Cooker-Beef-Stew-V1.jpeg');
+  ('McKade C.', 'Amish Soft Pretzels', 'Side', 'https://bethbryan.com/wp-content/uploads/2013/02/IMG_3935-1024x682.jpg', now() - interval '30 days'),
+  ('Tim D.', 'Instant Pot Shredded Beef Nachos', 'Main Dish', 'https://hips.hearstapps.com/hmg-prod/images/190423-instant-pot-nachos-191-1556728757.jpg', now() - interval '25 days'),
+  ('Mitchell', 'Pad Thai', 'Thai', 'https://hot-thai-kitchen.com/wp-content/uploads/2019/09/pad-thai-blog.jpg', now() - interval '20 days'),
+  ('Mitchell', 'Creamy Garlic Pork Chops', 'Main Dish', 'https://www.saltandlavender.com/wp-content/uploads/2020/07/creamy-garlic-pork-chops-1-1024x1536.jpg', now() - interval '15 days'),
+  ('Ethan B.', 'Crushed Potatoes with Spring Onions and Cheese', 'English', 'https://cdn-images.the-express.com/img/dynamic/39/590x/118267_1.jpg', now() - interval '10 days'),
+  ('Danny', 'Just Okay Beef Stew', 'American', 'https://www.budgetbytes.com/wp-content/uploads/2023/02/Slow-Cooker-Beef-Stew-V1.jpeg', now() - interval '5 days');
 
 -- Get recipe IDs
 SELECT id FROM recipes;

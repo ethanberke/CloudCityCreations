@@ -183,7 +183,9 @@ Cloud City Culinary Creations is actively evolving. Planned enhancements include
 ### 📱 Additional UI/UX Enhancements
 - Optional “favorite recipes” feature tied to user accounts
 - Upvote option on recipe tiles for users to be able to sort by most liked recipes
-- Sorting and filtering options (by style, contributor, date of submission)
+- ~~Sorting and filtering options (by style, contributor, date of submission)~~ — done:
+  the landing page has a filter bar (style, contributor, sort) backed by query params on
+  `GET /api/recipes`
 
 These are scoped to a household plus, at most, a small workplace group — not a public
 platform. See `docs/architecture.md` for why that constraint drives several of the choices

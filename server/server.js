@@ -88,6 +88,7 @@ const recipeColumns = sql`
   r.recipe_name,
   r.style,
   r.image_url,
+  r.created_at,
   (
     SELECT json_agg(json_build_object(
       'ingredient_id', i.id,
@@ -107,9 +108,55 @@ const recipeColumns = sql`
   ) AS instructions
 `;
 
+// Sort keys map to SQL fragments rather than to column names spliced into the
+// query, so nothing from the URL is ever interpolated as an identifier. Every
+// option ends in a unique tiebreaker: without one, ties (recipes seeded in the
+// same statement) come back in whatever order the heap happens to hold them,
+// and an edit can silently reshuffle the grid.
+const recipeSorts = {
+  newest: sql`r.created_at DESC, r.id DESC`,
+  oldest: sql`r.created_at ASC, r.id ASC`,
+  name: sql`lower(r.recipe_name) ASC, r.id ASC`,
+  contributor: sql`lower(r.contributor) ASC, lower(r.recipe_name) ASC, r.id ASC`,
+};
+const DEFAULT_SORT = "newest";
+
+// Express hands back an array for a repeated param (?style=a&style=b) and an
+// object for bracket syntax; anything that isn't a plain string is treated as
+// absent rather than coerced into a filter nobody asked for.
+const queryString = (value) => (typeof value === "string" ? value.trim() : "");
+
 app.get("/api/recipes", async (req, res) => {
+  const style = queryString(req.query.style);
+  const contributor = queryString(req.query.contributor);
+  const sort = queryString(req.query.sort) || DEFAULT_SORT;
+
+  if (!Object.hasOwn(recipeSorts, sort)) {
+    return res.status(400).json({
+      error: `Unknown sort "${sort}". Expected one of: ${Object.keys(
+        recipeSorts,
+      ).join(", ")}.`,
+    });
+  }
+
+  // Both columns are free text typed by hand, so "Main Dish" and "main dish"
+  // have to match. migration.sql indexes the same lower() expressions.
+  const conditions = [];
+  if (style) conditions.push(sql`lower(r.style) = lower(${style})`);
+  if (contributor)
+    conditions.push(sql`lower(r.contributor) = lower(${contributor})`);
+
+  const where = conditions.length
+    ? conditions.reduce((left, right) => sql`${left} AND ${right}`)
+    : sql`TRUE`;
+
   try {
-    const recipes = await sql`SELECT ${recipeColumns} FROM recipes r`;
+    const recipes = await sql`
+      SELECT ${recipeColumns}
+      FROM recipes r
+      WHERE ${where}
+      ORDER BY ${recipeSorts[sort]}
+    `;
     res.json(recipes);
   } catch (error) {
     console.error("Error fetching recipes:", error);

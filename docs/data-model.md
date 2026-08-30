@@ -17,9 +17,14 @@ CREATE TABLE recipes (
   contributor TEXT NOT NULL,   -- free text, not a user/auth reference
   recipe_name TEXT NOT NULL,
   style TEXT NOT NULL,         -- free text, e.g. "Main Dish", "Side", "Thai" — not an enum
-  image_url TEXT
+  image_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
+
+`created_at` exists only to sort by submission date (#10). Nothing writes it — the default
+covers both `POST` and the seed data — and `PATCH` deliberately leaves it alone, so it means
+"submitted", not "last touched".
 
 ## `ingredients`
 
@@ -65,7 +70,7 @@ recipes have no owner. `DELETE /api/recipes/:recipe_id` therefore removes the
 `sql.begin(...)` transaction; `PATCH` does the same to replace a recipe's children. Adding the
 cascade later would let both drop those explicit deletes, but nothing depends on that today.
 
-Recipes still have no owner, so neither route can check *who* is deleting — that's blocked on
+Recipes still have no owner, so neither route can check _who_ is deleting — that's blocked on
 auth (#5, see [roadmap.md](./roadmap.md)). Whatever lands there will add an owner column;
 `contributor` stays as the display name.
 
@@ -81,23 +86,45 @@ Both `GET /api/recipes` and `GET /api/recipes/:recipe_id` (see
   "recipe_name": "Amish Soft Pretzels",
   "style": "Side",
   "image_url": "https://...",
+  "created_at": "2026-07-31T15:34:36.568Z",
   "ingredients": [
-    { "ingredient_id": 1, "ingredient": "1.5 cups warm water" }
+    { "ingredient_id": 1, "ingredient": "1.5 cups warm water" },
     // ...
   ],
   "instructions": [
-    { "instruction_id": 1, "step_order": 1, "step": "In a mixing bowl..." }
+    { "instruction_id": 1, "step_order": 1, "step": "In a mixing bowl..." },
     // ... ORDER BY step_order
-  ]
+  ],
 }
 ```
 
-## Indexes to add if/when this needs to scale
+## Indexes
 
-Currently unindexed beyond the primary keys — fine at potluck scale (a handful of recipes per
-event), but worth adding once `style`/contributor filtering (see
-[roadmap.md](./roadmap.md)) lands:
+`migration.sql` creates two beyond the primary keys, both added with the filtering in #10:
 
-- `ingredients.recipe_id`, `instructions.recipe_id` — every read already filters on these via
-  the correlated subqueries.
-- `recipes.style` — once sorting/filtering by style is built.
+- `recipes_style_lower_idx` on `lower(style)`
+- `recipes_contributor_lower_idx` on `lower(contributor)`
+
+They are on the `lower()` expressions rather than the bare columns because the filters match
+case-insensitively — a plain `btree (style)` index would simply not be used by
+`WHERE lower(r.style) = lower($1)`.
+
+Still unindexed, and fine at potluck scale (a handful of recipes per event):
+
+- `ingredients.recipe_id`, `instructions.recipe_id` — every read filters on these via the
+  correlated subqueries, so they are the next ones worth adding.
+
+## Applying schema changes to an existing database
+
+`migration.sql` is destructive and the Docker entrypoint only runs it on an empty volume, so
+an already-seeded database needs the change applied by hand. For #10 that is:
+
+```sql
+ALTER TABLE recipes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+CREATE INDEX IF NOT EXISTS recipes_style_lower_idx ON recipes (lower(style));
+CREATE INDEX IF NOT EXISTS recipes_contributor_lower_idx ON recipes (lower(contributor));
+```
+
+Existing rows all take the same `now()`, so date sorting is a no-op on them until new recipes
+arrive — the seed data in `migration.sql` staggers its timestamps so a fresh database shows
+the sort working.
