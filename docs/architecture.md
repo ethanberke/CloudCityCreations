@@ -12,11 +12,11 @@
 
 ## Services
 
-| Service  | Stack                                    | Responsibility                                            |
-|----------|--------------------------------------------|--------------------------------------------------------------|
-| `client` | React + Vite, Material UI                | Browse recipes (grid + modal), submit new recipes            |
-| `server` | Node + Express, `postgres` (porsager)   | Single-file REST API over three tables, serves `client/dist` in prod |
-| `db`     | PostgreSQL 15                            | `recipes` / `ingredients` / `instructions`, seeded from `server/migration.sql` |
+| Service  | Stack                                 | Responsibility                                                                 |
+| -------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| `client` | React + Vite, Material UI             | Browse recipes (grid + modal), submit new recipes                              |
+| `server` | Node + Express, `postgres` (porsager) | Single-file REST API over three tables, serves `client/dist` in prod           |
+| `db`     | PostgreSQL 15                         | `recipes` / `ingredients` / `instructions`, seeded from `server/migration.sql` |
 
 This is an npm workspaces monorepo (`server`, `client`) with root scripts running both dev
 servers concurrently. Each service also has its own `Dockerfile`; `compose.yaml` wires all
@@ -41,7 +41,8 @@ flowchart LR
 
 **Read path:** client fetches `GET /api/recipes` (list, with `ingredients`/`instructions`
 nested via correlated `json_agg` subqueries) or `GET /api/recipes/:recipe_id` (single recipe,
-same shape). No pagination, filtering, or sorting yet.
+same shape). The list route takes optional `style`, `contributor` and `sort` params, which the
+landing page drives from a filter bar above the grid; there is no pagination.
 
 **Write path:** `Contribute.jsx` builds a recipe object client-side (growable arrays of
 ingredient/instruction text fields) and `ContributePage.jsx` POSTs it to `/api/recipes`. The

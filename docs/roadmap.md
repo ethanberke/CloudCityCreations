@@ -61,10 +61,21 @@ Epic/issue, not a commitment.
   previewed object is the request body, so blank rows are dropped from both rather than only
   hidden from view.
 
-- **Favorites / upvotes + sorting & filtering** (#9, #10)
-  Upvote recipes, sort by most-liked, filter/sort by style, contributor, or submission date.
-  Depends on auth for favorites; sorting/filtering by `style` would want an index — see
-  [data-model.md](./data-model.md#indexes-to-add-ifwhen-this-needs-to-scale).
+- **Sorting & filtering** (#10) — _done._
+  `GET /api/recipes` takes optional `style`, `contributor` and `sort` params, and the landing
+  page puts a filter bar above the tile grid that drives them. Filtering happens in SQL, not
+  in the client, and both filters match case-insensitively since the columns are free text.
+  Sorting by submission date needed a `created_at` column, which is now on `recipes`; the
+  `lower(style)`/`lower(contributor)` indexes went in alongside — see
+  [data-model.md](./data-model.md#indexes).
+
+  The dropdown options are built from the values in the first unfiltered response, so a new
+  style becomes filterable the moment a recipe uses it. `/my-recipes` was left alone.
+
+- **Favorites / upvotes** (#9)
+  Upvote recipes and sort by most-liked. Blocked on auth — a vote needs an identity behind it,
+  and `localStorage` names would not stop anyone voting twice. The sort itself plugs into the
+  `sort` param #10 added.
 
 ## Tech debt (not in the README, found while documenting the code)
 
