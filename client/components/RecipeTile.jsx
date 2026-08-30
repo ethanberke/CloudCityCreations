@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Box,
@@ -18,20 +18,16 @@ import {
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import DeleteRecipe from "./DeleteRecipe";
 
-export default function RecipeTile() {
-  const [recipes, setRecipes] = useState([]);
+export default function RecipeTile({
+  recipes = [],
+  showOwnerActions = false,
+  onRecipeDeleted,
+}) {
   const [open, setOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeToDelete, setRecipeToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [notice, setNotice] = useState(null);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/recipes`)
-      .then((res) => res.json())
-      .then((data) => setRecipes(data))
-      .catch((err) => console.error(err));
-  }, []);
 
   const handleOpen = (recipe) => {
     setSelectedRecipe(recipe);
@@ -59,11 +55,7 @@ export default function RecipeTile() {
 
       if (!res.ok) throw new Error(`Delete failed with status ${res.status}`);
 
-      setRecipes((current) =>
-        current.filter(
-          (recipe) => recipe.recipe_id !== recipeToDelete.recipe_id,
-        ),
-      );
+      onRecipeDeleted?.(recipeToDelete.recipe_id);
       setNotice({
         severity: "success",
         message: `Successfully deleted "${recipeToDelete.recipe_name}".`,
@@ -89,10 +81,12 @@ export default function RecipeTile() {
               onClick={() => handleOpen(recipe)}
               sx={{ position: "relative" }}
             >
-              <DeleteRecipe
-                recipeName={recipe.recipe_name}
-                onDelete={() => setRecipeToDelete(recipe)}
-              />
+              {showOwnerActions && (
+                <DeleteRecipe
+                  recipeName={recipe.recipe_name}
+                  onDelete={() => setRecipeToDelete(recipe)}
+                />
+              )}
               <CardActionArea>
                 <CardMedia
                   component="img"

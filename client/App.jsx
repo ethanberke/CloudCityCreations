@@ -4,6 +4,7 @@ import Landing from "./components/Landing";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
 import ContributePage from "./pages/ContributePage";
+import MyRecipesPage from "./pages/MyRecipesPage";
 import RecipesPage from "./pages/RecipesPage";
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/recipes" element={<RecipesPage />} />
+        <Route path="/my-recipes" element={<MyRecipesPage />} />
         <Route path="/contribute" element={<ContributePage />} />
         <Route path="/about" element={<About />} />
       </Routes>
