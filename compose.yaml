@@ -25,9 +25,11 @@ services:
       # credentials already hardcoded on the `db` service below — no new secret.
       POSTGRES_HOST: db
       DATABASE_URL: postgres://postgres:password@db:5432/mydb
+      SCRAPER_URL: http://scraper:8001
     container_name: node_server
     depends_on:
       - db
+      - scraper
     ports:
       - "5000:5000"
     volumes:
@@ -37,6 +39,17 @@ services:
       # a named volume at /app/uploads instead, or photos vanish on rebuild.
       - ./server:/app
       - /app/node_modules
+
+  scraper:
+    build: ./scraper
+    container_name: recipe_scraper
+    restart: unless-stopped
+    ports:
+      # Bound to the loopback interface, not 0.0.0.0: the containerised server
+      # reaches it as `scraper:8001` over the compose network, and the published
+      # port exists only so a server run on the host (`npm run dev`) can reach
+      # it too. Nothing on the LAN needs to call this service directly.
+      - "127.0.0.1:8001:8001"
 
   db:
     image: postgres:15

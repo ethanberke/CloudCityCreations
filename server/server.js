@@ -12,6 +12,7 @@ import {
   UPLOAD_DIR,
   UPLOAD_URL_PREFIX,
 } from "./lib/images.js";
+import { RemoteImageError, storeRemoteImage } from "./lib/remoteImage.js";
 
 // Reads server/.env — resolved from the working directory, which npm workspaces
 // and the Docker WORKDIR both set to the server directory. It deliberately no
@@ -19,6 +20,16 @@ import {
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
+
+// Recipe importing lives in the Python service under scraper/ (FastAPI). Only
+// this server talks to it, so the browser keeps one origin, one CORS config and
+// one port to put behind the reverse proxy when auth lands (#5). The default is
+// the host-side dev address; compose points it at the `scraper` service.
+const SCRAPER_URL = (
+  process.env.SCRAPER_URL || "http://localhost:8001"
+).replace(/\/$/, "");
+const SCRAPE_TIMEOUT_MS = 30_000;
+
 const sql = postgres(process.env.DATABASE_URL);
 const app = express();
 
@@ -79,6 +90,65 @@ app.post("/api/uploads", (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+});
+
+// Copies an image from the page a recipe was imported from onto local disk.
+// Split out from /api/scrape so nothing is written until the contributor
+// confirms the submission — an abandoned import leaves no orphaned file, the
+// same invariant the staged-photo upload already holds.
+app.post("/api/uploads/from-url", async (req, res) => {
+  const url = typeof req.body?.url === "string" ? req.body.url.trim() : "";
+  if (!url) return res.status(400).json({ error: "No image link provided" });
+
+  try {
+    res.status(201).json({ url: await storeRemoteImage(url) });
+  } catch (error) {
+    if (error instanceof RemoteImageError) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Error saving remote image:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Thin proxy to the importer. It returns Contribute-form fields, which the
+// client puts straight into the form for editing — nothing here touches the
+// database, so an import that reads a page badly costs an edit, not a bad row.
+app.post("/api/scrape", async (req, res) => {
+  const url = typeof req.body?.url === "string" ? req.body.url.trim() : "";
+  if (!url)
+    return res.status(400).json({ error: "Paste a recipe link first." });
+
+  let response;
+  try {
+    response = await fetch(`${SCRAPER_URL}/scrape`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+      signal: AbortSignal.timeout(SCRAPE_TIMEOUT_MS),
+    });
+  } catch (error) {
+    console.error("Recipe importer unreachable:", error.message);
+    return res.status(503).json({
+      error:
+        "The recipe importer isn't running. Start the scraper service and try again.",
+    });
+  }
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    // FastAPI reports failures as { detail }, and those messages describe the
+    // link someone pasted rather than an internal fault, so they pass through.
+    // Its own validation errors put a list there instead of a string.
+    const detail = payload?.detail;
+    return res.status(response.status).json({
+      error:
+        typeof detail === "string" ? detail : "Could not import that recipe.",
+    });
+  }
+
+  res.json(payload);
 });
 
 // Shared column list for both recipe reads below — each recipe's ingredients/instructions
@@ -193,7 +263,6 @@ app.post("/api/recipes", async (req, res) => {
     instructions,
   } = req.body;
 
-  console.log("BODY:", req.body);
   try {
     const recipe_id = await sql.begin(async (sql) => {
       const recipeResult = await sql`

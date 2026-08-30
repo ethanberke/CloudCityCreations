@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { useRecipeForm } from "../hooks/useRecipeForm";
 import { getContributorName, setContributorName } from "../utils/contributor";
 import RecipeForm from "./RecipeForm";
+import RecipeImport from "./RecipeImport";
 import SubmissionPreviewModal from "./SubmissionPreviewModal";
 
 const Contribute = ({ onRecipeSubmit }) => {
@@ -76,6 +77,8 @@ const Contribute = ({ onRecipeSubmit }) => {
       >
         Contribute a Recipe
       </Typography>
+
+      <RecipeImport onImported={form.applyImportedRecipe} />
 
       <RecipeForm form={form} />
 

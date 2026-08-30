@@ -11,3 +11,12 @@
 **/.env.*
 !.env.template
 !**/.env.template
+
+# Python (scraper/): local virtualenv, bytecode and tool caches. The service
+# ships its dependencies through requirements.txt and its image, so none of
+# this belongs in the repo.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/

@@ -12,15 +12,18 @@
 
 ## Services
 
-| Service  | Stack                                 | Responsibility                                                                 |
-| -------- | ------------------------------------- | ------------------------------------------------------------------------------ |
-| `client` | React + Vite, Material UI             | Browse recipes (grid + modal), submit new recipes                              |
-| `server` | Node + Express, `postgres` (porsager) | Single-file REST API over three tables, serves `client/dist` in prod           |
-| `db`     | PostgreSQL 15                         | `recipes` / `ingredients` / `instructions`, seeded from `server/migration.sql` |
+| Service   | Stack                                 | Responsibility                                                                 |
+| --------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| `client`  | React + Vite, Material UI             | Browse recipes (grid + modal), submit new recipes                              |
+| `server`  | Node + Express, `postgres` (porsager) | Single-file REST API over three tables, serves `client/dist` in prod           |
+| `db`      | PostgreSQL 15                         | `recipes` / `ingredients` / `instructions`, seeded from `server/migration.sql` |
+| `scraper` | Python 3.12, FastAPI, recipe-scrapers | Reads a public recipe URL and returns Contribute-form fields (#33)             |
 
 This is an npm workspaces monorepo (`server`, `client`) with root scripts running both dev
-servers concurrently. Each service also has its own `Dockerfile`; `compose.yaml` wires all
-three together for local dev, auto-seeding Postgres via `docker-entrypoint-initdb.d`.
+servers concurrently. `scraper/` is deliberately outside the npm workspaces — it is a Python
+service with its own `requirements.txt`, ruff config and pytest suite. Each service has its
+own `Dockerfile`; `compose.yaml` wires all four together for local dev, auto-seeding Postgres
+via `docker-entrypoint-initdb.d`.
 
 ## Dataflow
 
@@ -30,13 +33,17 @@ flowchart LR
         Landing[Landing.jsx]
         Tile[RecipeTile.jsx]
         Contribute[Contribute.jsx]
+        Import[RecipeImport.jsx]
     end
 
     Landing -- "GET /api/recipes" --> API["server — Express (:5000)"]
     Tile -- "GET /api/recipes\n(fetches independently)" --> API
     Contribute -- "POST /api/recipes" --> API
+    Import -- "POST /api/scrape" --> API
 
     API -- "tagged-template SQL\n(postgres/porsager)" --> DB[(PostgreSQL:\nrecipes / ingredients / instructions)]
+    API -- "POST /scrape" --> Scraper["scraper — FastAPI (:8001)"]
+    Scraper -- "GET (public internet)" --> Site[("recipe site")]
 ```
 
 **Read path:** client fetches `GET /api/recipes` (list, with `ingredients`/`instructions`
@@ -56,6 +63,47 @@ part-way through rolls back instead of orphaning a `recipes` row. `PATCH` and `D
 post-build, so in a deployed setting `client` and `server` can be the same origin — CORS is
 currently locked to `localhost:5173` / `127.0.0.1:5173` for local dev only.
 
+## Recipe import (#33)
+
+Pasting a recipe URL on `/contribute` fills the form in. That is all it does: the import is
+a prefill, so a page the parser reads badly costs an edit rather than a bad row, and the
+preview modal is still the only thing that writes a recipe.
+
+```text
+RecipeImport.jsx  --POST /api/scrape-->  Express  --POST /scrape-->  scraper (FastAPI)
+                                                                          |
+                                                       fetch + parse the recipe page
+       form fields  <-------------------------------------------------------
+   (contributor kept, everything else replaced and editable)
+
+on preview confirm:  POST /api/uploads/from-url  →  photo copied to UPLOAD_DIR
+                     POST /api/recipes           →  the recipe is written
+```
+
+**Why a separate Python service.** The maintained recipe parsers live in Python
+(`recipe-scrapers` carries per-site parsers for hundreds of food sites, plus a schema.org
+reader), and that dependency tree has no business in the Express image. `scraper/` therefore
+has no database access and writes nothing: it takes a URL and returns JSON. Express owns
+`/api/scrape` and calls it server-to-server, which keeps the browser on one origin, one CORS
+config and one port to protect when forward auth lands (#5) — the scraper's published port is
+bound to `127.0.0.1` so only the host reaches it.
+
+**Two passes over a page.** `recipe-scrapers` first (with `supported_only=False`, so
+unsupported hosts still get its schema.org reader), then a JSON-LD reader of our own for when
+that raises. Both feed the same normalisation, because what comes back is other people's
+HTML: entity-escaped, tag-riddled, and shaped four different ways for `recipeInstructions`
+alone. `scraper/test_extract.py` covers those shapes; it is the only test suite in the repo.
+
+`style` takes the site's `recipeCategory` and falls back to `recipeCuisine`, keeping one
+value — it drives the landing page's filter dropdown, where a recipe is one option, not two.
+
+**Photos** are copied onto local disk (`POST /api/uploads/from-url`) rather than hotlinked,
+so a saved recipe survives the source site moving the file or blocking hotlinks. The copy
+happens when the preview is confirmed, not at import, so an abandoned import leaves no
+orphaned file — the same invariant `buildSubmission` already held for staged uploads. Unlike
+a browser upload, these bytes are not re-encoded, so a site's photo keeps whatever metadata it
+was published with.
+
 ## Deployment model and threat model
 
 **Today:** two users on a private home network, reachable only from that LAN (a hidden SSID),
@@ -67,6 +115,21 @@ the LAN or a VPN. Not a public platform, and not built to go past that.
 That ceiling is why several choices here look under-engineered on purpose: local disk instead
 of object storage for images, a reverse proxy instead of a hosted identity provider, no CDN,
 no rate limiting, no pagination. Read those as deliberate, not as gaps waiting to be filled.
+
+**The one thing that does reach the internet is recipe import (#33).** Everything else in the
+app is inbound-only from the LAN; importing a recipe makes the homelab fetch a URL that a
+person pasted, which is server-side request forgery unless it is guarded. Both fetching
+paths — the Python importer (`scraper/fetching.py`) and the Node image copier
+(`server/lib/remoteImage.js`) — allow only http/https, resolve the host and refuse any
+non-public address (loopback, RFC1918, CGNAT, link-local including `169.254.169.254`,
+multicast, reserved) for IPv4 and IPv6, re-check every redirect hop instead of letting the
+HTTP client follow them, and read the body against a byte cap and a timeout. The residual
+window is DNS rebinding between the check and the connection, which is accepted here: the
+importer holds no credentials and can reach nothing this box couldn't already reach.
+
+Note that `image_url` has always taken external links, and viewers' browsers have always
+loaded them — a page's photo needs internet on the viewer's side, never on the server's.
+What #33 added is the _server_ making outbound requests.
 
 The one that isn't optional is auth. While the only two people who can reach the app are
 trusted, unauthenticated write routes are an accident risk at worst. The moment anyone else
@@ -121,12 +184,15 @@ with `components/RecipeFilters.jsx` above it. `/my-recipes` reuses the same `Rec
 
 `.github/workflows/cicd.yml` runs on push/PR to `main`:
 
-1. **lint** — ESLint + Prettier for both `client` and `server` workspaces.
-2. **docker** (needs `lint` to pass) — builds and pushes `client`/`server` images to Docker
-   Hub as `cloudcitycreations-client` / `cloudcitycreations-server:latest`.
+1. **lint** — ESLint + Prettier for both `client` and `server` workspaces, then ruff
+   (lint + format check) and pytest for `scraper`.
+2. **docker** (needs `lint` to pass) — builds and pushes `client`/`server`/`scraper` images to
+   Docker Hub as `cloudcitycreations-client` / `-server` / `-scraper:latest`.
 
-There is no test suite configured in either workspace, and no deploy step past the image push
-— nothing currently pulls `:latest` onto a running host.
+Neither JS workspace has a test suite; `scraper/test_extract.py` is the only one in the repo,
+and it runs inside the `lint` job rather than behind a test job that would exist for one
+service. There is no deploy step past the image push — nothing currently pulls `:latest` onto
+a running host.
 
 ## Open questions / decide-later
 

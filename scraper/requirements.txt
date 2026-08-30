@@ -1,0 +1,8 @@
+# Pinned rather than floated: recipe-scrapers changes its per-site parsers and
+# its scrape_html signature between minors, and a scraper that silently starts
+# returning nothing is worse than one that fails to install.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+beautifulsoup4==4.12.3
+recipe-scrapers==15.5.0

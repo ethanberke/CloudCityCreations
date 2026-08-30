@@ -72,6 +72,24 @@ Epic/issue, not a commitment.
   The dropdown options are built from the values in the first unfiltered response, so a new
   style becomes filterable the moment a recipe uses it. `/my-recipes` was left alone.
 
+- **Import a recipe by URL** (#33) — _done._
+  Paste a recipe link on `/contribute` and the form fills itself in — name, style,
+  ingredients, steps and photo — with every field still editable and the existing preview
+  modal still the thing that writes it. Parsing runs in a separate Python service
+  (`scraper/`, FastAPI + `recipe-scrapers` with a schema.org JSON-LD fallback) because that
+  is where the maintained recipe parsers live; Express proxies it at `POST /api/scrape` so
+  the browser keeps one origin.
+
+  This is the app's first outbound internet dependency, and the only one — see
+  [architecture.md](./architecture.md#deployment-model-and-threat-model) for the SSRF guards
+  that come with letting a LAN box fetch a pasted URL. Still open: the route is
+  unauthenticated like every other one, so it wants the proxy's user header when #5 lands.
+
+  Not included: storing the source URL as attribution (needs a `recipes` column, and
+  `migration.sql` is destructive — its own issue), and sites that render recipes in
+  JavaScript or publish them as pictures of a page, which fail with a message saying to type
+  it in by hand.
+
 - **Favorites / upvotes** (#9)
   Upvote recipes and sort by most-liked. Blocked on auth — a vote needs an identity behind it,
   and `localStorage` names would not stop anyone voting twice. The sort itself plugs into the
@@ -88,9 +106,10 @@ Epic/issue, not a commitment.
   `GH_TOKEN` moved to `.env.tooling`, read only by the shell. The repo-root `.env` is gone:
   `server/.env` is the server's only config source, and `client/vite.config.js` no longer
   calls `dotenv` at all. `.gitignore` now ignores every `.env*` variant by default.
-- **No test suite in either workspace.** CI currently only runs ESLint + Prettier
-  (`.github/workflows/cicd.yml`) — no test job exists to add to. This is now the largest
-  remaining item here: #10 and #27 were both verified by hand, and none of that is captured.
+- **No test suite in either JS workspace.** `scraper/test_extract.py` (#33) is the first
+  automated test in the repo, and CI now runs it — but it covers the Python parsing layer
+  only. Express and the React client are still verified by hand, which is the largest
+  remaining item here: #10 and #27 were both checked that way and none of it is captured.
 
 ## Explicitly out of scope for now
 

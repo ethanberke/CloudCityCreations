@@ -4,7 +4,7 @@
 
 Cloud City Culinary Creations — or **C3 Creations** — is a full‑stack recipe application designed to help my team and workplace share dishes for our semi-regular potlucks and chili cookoffs. Inspired by the Star Wars theme at my office, the app provides a fun and modern way to browse, contribute, and enjoy recipes from across the squadron and galaxy.
 
-The project is built with **JavaScript**, **Node/Express**, **React**, **PostgreSQL**, and **Material UI**.
+The project is built with **JavaScript**, **Node/Express**, **React**, **PostgreSQL**, and **Material UI**, plus a small **Python (FastAPI)** service that imports recipes from a URL.
 
 ---
 
@@ -46,6 +46,19 @@ Users can add their own creations through the Contribute page:
 
 ---
 
+### 🌐 Import a Recipe by Link
+Paste a recipe URL and the Contribute form fills itself in — name, style, ingredients, steps
+and photo — so a recipe found online doesn't have to be retyped.
+
+- Parsed by a separate Python service (`scraper/`) using `recipe-scrapers`, falling back to
+  the schema.org data most recipe sites already publish
+- Everything stays editable, and the preview modal is still what saves the recipe
+- The photo is copied onto the app's own disk, so it survives the source site changing
+- This is the only part of the app that reaches the internet; it refuses links that resolve
+  to private addresses (see `docs/architecture.md`)
+
+---
+
 ## Tech Stack
 
 ### Front‑End
@@ -71,7 +84,8 @@ Users can add their own creations through the Contribute page:
 client/          # React front-end
 client/.env      # VITE_API_URL           (copy from client/.env.template)
 server/          # Express back-end
-server/.env      # PORT, DATABASE_URL, …  (copy from server/.env.template)
+server/.env      # PORT, DATABASE_URL, SCRAPER_URL, … (copy from server/.env.template)
+scraper/         # Python recipe importer (FastAPI) — no .env, config via compose
 migration.sql    # Seed data for recipes, ingredients, instructions
 .env.tooling     # GH_TOKEN for gh/git — sourced by the shell, read by nothing in the app
 ```
@@ -132,7 +146,13 @@ From the client directory:
 npm run dev
 ```
 
-### 5. Open the app
+### 5. Start the recipe importer (optional)
+From the root — it runs in Docker, and only the Import box on the Contribute page needs it:
+```bash
+docker compose up -d scraper
+```
+
+### 6. Open the app
 Visit:
 http://localhost:5173
 (or whichever port Vite selects)
@@ -184,6 +204,10 @@ Cloud City Culinary Creations is actively evolving. Planned enhancements include
   - Instructions  
   - Image preview  
 - Helps users verify formatting and content before saving to the database
+
+### 🌐 Recipe Import — _shipped_
+- Paste a recipe URL on the Contribute page and the fields fill in for review
+- Runs as its own Python service so the parsers stay out of the Express image
 
 ### 📱 Additional UI/UX Enhancements
 - Optional “favorite recipes” feature tied to user accounts

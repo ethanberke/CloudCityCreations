@@ -1,3 +1,5 @@
+import { apiBase, postJson } from "./api";
+
 // Contributors photograph their dinner, so what arrives here is a raw phone
 // photo: several megabytes, rotated by an EXIF flag, and tagged with the GPS
 // coordinates of wherever it was taken. Everything below exists to deal with
@@ -11,10 +13,6 @@ const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const IMAGE_ACCEPT = ACCEPTED_TYPES.join(",");
 export const FALLBACK_IMAGE = "/images/grogu_peak.jpg";
-
-function apiBase() {
-  return (import.meta.env.VITE_API_URL ?? "/api").replace(/\/$/, "");
-}
 
 // `image_url` holds two shapes: absolute links someone pasted, and paths this
 // server issued for uploads. Only the second needs the API base attached.
@@ -92,4 +90,13 @@ export async function uploadImage(blob) {
 
   const { url } = await res.json();
   return url;
+}
+
+// Copies a photo from an imported recipe page onto our own disk, so the recipe
+// keeps its picture when the source site moves it or starts refusing hotlinks.
+// The server does the fetching: it's the side that can check where the link
+// actually resolves before opening a socket.
+export async function storeImageFromUrl(url) {
+  const stored = await postJson("/uploads/from-url", { url });
+  return stored.url;
 }

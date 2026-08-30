@@ -45,6 +45,29 @@ jobs:
         working-directory: ./server
         run: npm run prettier . --check
 
+      # ---------- IMPORTER (Python) ----------
+      # The recipe importer is the one service with tests, and this is the only
+      # job that runs anything, so they live here rather than behind a test job
+      # that would exist for one workspace.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install importer dependencies
+        working-directory: ./scraper
+        run: pip install -r requirements-dev.txt
+
+      - name: Run Ruff lint + format check (importer)
+        working-directory: ./scraper
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Run tests (importer)
+        working-directory: ./scraper
+        run: python -m pytest -q
+
 
   # ---------- DOCKER BUILD ----------
   docker:
@@ -81,3 +104,11 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cloudcitycreations-server:latest
+
+      - name: Build and push importer image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./scraper
+          file: ./scraper/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cloudcitycreations-scraper:latest
