@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { prepareImage, uploadImage } from "../utils/image";
+import { prepareImage, storeImageFromUrl, uploadImage } from "../utils/image";
 
 const BLANK = {
   contributor: "",
@@ -35,6 +35,11 @@ export function useRecipeForm(initialRecipe) {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError] = useState(null);
   const [processingImage, setProcessingImage] = useState(false);
+  // The photo URL an import brought in, remembered so buildSubmission can tell
+  // it apart from a link someone pasted by hand: only the imported one gets
+  // copied onto our disk. Editing the field clears the match, and the link is
+  // then treated as pasted.
+  const [importedImageUrl, setImportedImageUrl] = useState("");
 
   useEffect(() => {
     if (!imagePreview) return undefined;
@@ -84,6 +89,26 @@ export function useRecipeForm(initialRecipe) {
     setImageError(null);
   };
 
+  // Fills the form from an imported page. The contributor is deliberately kept:
+  // whoever is filling this in is the contributor, not the site's author. An
+  // import replaces the recipe fields wholesale, which is what makes a second
+  // import after a bad first one leave nothing behind.
+  const applyImportedRecipe = (recipe) => {
+    setValues((current) => ({
+      ...recipeToFormValues(recipe),
+      contributor: current.contributor,
+      // The form needs a row to type into; a page that gave us no ingredients
+      // should still leave an empty field rather than nothing at all.
+      ingredients: recipe.ingredients?.length ? recipe.ingredients : [""],
+    }));
+
+    // A staged photo would otherwise win over the imported one in buildSubmission.
+    setImageBlob(null);
+    setImagePreview(null);
+    setImageError(null);
+    setImportedImageUrl(recipe.image_url ?? "");
+  };
+
   // Blank ingredient and step rows are dropped here rather than only being
   // hidden, so what the preview shows is what gets written.
   const previewRecipe = {
@@ -103,11 +128,25 @@ export function useRecipeForm(initialRecipe) {
   // Kept separate from previewRecipe so nothing is written to disk until the
   // user confirms.
   const buildSubmission = async () => {
-    const image_url = imageBlob
-      ? await uploadImage(imageBlob)
-      : values.image_url.trim();
+    if (imageBlob) {
+      return { ...previewRecipe, image_url: await uploadImage(imageBlob) };
+    }
 
-    return { ...previewRecipe, image_url };
+    const pasted = values.image_url.trim();
+
+    // An imported photo is copied to local disk here rather than at import
+    // time, so abandoning a preview writes no file. If the copy fails the
+    // original link still renders in a browser, so it is kept rather than
+    // dropping the photo over a fetch we could not make.
+    if (pasted && pasted === importedImageUrl) {
+      try {
+        return { ...previewRecipe, image_url: await storeImageFromUrl(pasted) };
+      } catch (err) {
+        console.error("Could not copy the imported photo:", err);
+      }
+    }
+
+    return { ...previewRecipe, image_url: pasted };
   };
 
   return {
@@ -120,6 +159,7 @@ export function useRecipeForm(initialRecipe) {
     processingImage,
     handleFileChange,
     removeImage,
+    applyImportedRecipe,
     previewRecipe,
     buildSubmission,
   };

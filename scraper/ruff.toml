@@ -1,0 +1,8 @@
+# Ruff stands in for the ESLint + Prettier pair the JS workspaces run: one tool
+# for both lint and format, so CI checks this service the same way it checks the
+# others. 88 is ruff's default line length; the JS side wraps at 80.
+line-length = 88
+
+[lint]
+# pycodestyle, pyflakes, isort, bugbear, comprehensions, pyupgrade.
+select = ["E", "F", "I", "B", "C4", "UP"]

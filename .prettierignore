@@ -1,0 +1,5 @@
+# Prettier walks everything it isn't told to skip. node_modules is excluded by
+# default; a Python virtualenv and the built client are not, and both are full
+# of files Prettier would happily reformat.
+scraper/.venv/
+client/dist/
