@@ -25,15 +25,19 @@ Epic/issue, not a commitment.
   DNS-01 ACME challenge (no port forwarding) and a Pi-hole local DNS record pointing the
   hostname at the LAN IP.
 
-- **Image upload** (#6 server, #24 client)
-  Upload a photo instead of pasting an `image_url` link — both stay supported, since they
-  produce the same thing: a string in `image_url`.
+- **Image upload** (#6 server, #24 client) — _done._
+  The Contribute form takes a photo upload or a pasted link; both end up as a string in
+  `image_url`. Files are stored on local disk under `UPLOAD_DIR` (default `server/uploads`)
+  and served from `/api/uploads/`, with the format decided by sniffing magic bytes and the
+  filename generated server-side.
 
-  Stored on local disk in a named Docker volume, served under `/api/uploads/`. Not Supabase
-  Storage — at the intended scale the whole library is tens of megabytes, which needs no
-  object store, no CDN, and no quota. The browser downscales to ~1600px and re-encodes to
-  JPEG before upload, which also strips EXIF; that matters because contributors photograph
-  meals at home and raw phone photos carry GPS coordinates.
+  The browser downscales to 1600px and re-encodes to JPEG before uploading, which also
+  discards EXIF — that matters because contributors photograph meals at home and raw phone
+  photos carry GPS coordinates. Orientation is applied at decode so stripping the metadata
+  doesn't leave portrait photos sideways.
+
+  Still open: the route is unauthenticated, so it needs the proxy's user header when #5
+  lands.
 
 - **Edit & delete recipes** — _delete UI landed, edit UI and ownership pending._
   `DELETE /api/recipes/:recipe_id` is wired up from the recipe grid: a delete icon on each
@@ -66,10 +70,6 @@ Epic/issue, not a commitment.
   but no longer linked from the navbar (#17), so deleting both is now a smaller decision than
   it was. See
   [architecture.md](./architecture.md#known-duplication-two-implementations-per-route).
-- **The placeholder image 404s in production builds** (#25). `grogu_peak.jpg` sits in
-  `client/images/`, which the Vite dev server happens to serve but `npm run build` does not
-  copy — only `client/public/` reaches `dist`. Every image fallback and the navbar logo are
-  broken in the Docker image while looking fine locally.
 - **No test suite in either workspace.** CI currently only runs ESLint + Prettier
   (`.github/workflows/cicd.yml`) — no test job exists to add to.
 

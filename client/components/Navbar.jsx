@@ -53,7 +53,7 @@ function TADS_AppBar() {
           >
             <Box
               component="img"
-              src="../images/grogu_peak.jpg"
+              src="/images/grogu_peak.jpg"
               alt="App Icon"
               sx={{
                 height: 30,

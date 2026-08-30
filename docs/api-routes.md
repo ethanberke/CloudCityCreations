@@ -7,13 +7,15 @@ template SQL. See [data-model.md](./data-model.md) for the underlying schema and
 
 ## `server` (Express) — base path `/api`
 
-| Method | Route                   | Purpose                                                                 |
-|--------|--------------------------|----------------------------------------------------------------------------|
-| GET    | `/api/recipes`          | All recipes, each with `ingredients`/`instructions` nested via `json_agg` subqueries |
-| GET    | `/api/recipes/:recipe_id` | Same shape as above, single recipe. `404` if the id doesn't exist        |
-| POST   | `/api/recipes`          | Creates a recipe: `{ contributor, recipe_name, style, image_url, ingredients[], instructions[] }` |
-| PATCH  | `/api/recipes/:recipe_id` | Replaces a recipe and all of its children. `404` if the id doesn't exist |
-| DELETE | `/api/recipes/:recipe_id` | Deletes a recipe and its `ingredients`/`instructions`. `404` if the id doesn't exist |
+| Method | Route                     | Purpose                                                                                           |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------- |
+| GET    | `/api/recipes`            | All recipes, each with `ingredients`/`instructions` nested via `json_agg` subqueries              |
+| GET    | `/api/recipes/:recipe_id` | Same shape as above, single recipe. `404` if the id doesn't exist                                 |
+| POST   | `/api/recipes`            | Creates a recipe: `{ contributor, recipe_name, style, image_url, ingredients[], instructions[] }` |
+| PATCH  | `/api/recipes/:recipe_id` | Replaces a recipe and all of its children. `404` if the id doesn't exist                          |
+| DELETE | `/api/recipes/:recipe_id` | Deletes a recipe and its `ingredients`/`instructions`. `404` if the id doesn't exist              |
+| POST   | `/api/uploads`            | Stores one recipe photo, returns `{ url }` to put in `image_url`                                  |
+| GET    | `/api/uploads/:filename`  | Serves a stored photo (static)                                                                    |
 
 ### `POST /api/recipes` detail
 
@@ -43,6 +45,35 @@ children are removed explicitly (see
 [data-model.md](./data-model.md#no-cascade-delete-no-unique-constraints)). An empty
 `RETURNING` means nothing matched, which responds `404`; success responds
 `{ message: "Recipe deleted", recipe_id }`.
+
+### `POST /api/uploads` detail
+
+Multipart, field name `image`, one file, 5 MB cap. Held in memory so the bytes can be checked
+before anything reaches disk. Responds `201 { url: "/api/uploads/<uuid>.<ext>" }`, and the
+client puts that string in `image_url` — the same column a pasted link uses, so there is no
+schema change and no second code path for reads.
+
+Two things are deliberately not trusted:
+
+- **The supplied filename is discarded.** Files are stored as `crypto.randomUUID()` plus an
+  extension the server chose. A name we generated can't traverse out of the upload directory,
+  which removes the bug class rather than filtering for it.
+- **The declared MIME type is ignored.** The format comes from sniffing magic bytes (JPEG,
+  PNG, WebP). HTML uploaded as `.jpg` and served back from our own origin would be stored
+  XSS; `415` is returned instead. Responses also carry `X-Content-Type-Options: nosniff`.
+
+Failure modes: `400` no file or malformed upload, `413` over the size cap, `415` not a
+recognised image, `500` write failure.
+
+Uploads live in `UPLOAD_DIR` (default `server/uploads`, gitignored). `DELETE` unlinks a
+recipe's photo, and `PATCH` unlinks the previous one when the image changes — both best-effort
+and only after the transaction commits, since an unlink can't be rolled back. Pasted external
+URLs are never touched.
+
+**This route is unauthenticated like every other write route**, so anyone who can reach the
+server can fill the disk. Acceptable on a private LAN (see
+[architecture.md](./architecture.md#deployment-model-and-threat-model)); it needs the proxy's
+user header as soon as #5 lands.
 
 ## Static file serving
 

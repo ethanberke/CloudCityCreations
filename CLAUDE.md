@@ -55,6 +55,8 @@ convention rather than an actual barrier.
 
 ### Docker
 
+Uploaded recipe photos are written to `UPLOAD_DIR` (default `server/uploads`, gitignored) and served from `/api/uploads/`. In Docker they land in `./server/uploads` on the host via the existing `./server:/app` bind mount — a real deploy without that bind mount would need a named volume, or photos vanish on rebuild.
+
 `compose.yaml` defines three services: `client` (Vite dev server on 5173), `server` (Express on 5000), `db` (postgres:15 on 5432, auto-seeded from `server/migration.sql` via `docker-entrypoint-initdb.d`). Each of `client/` and `server/` needs its own `.env` (see `.env.template` in each dir) since `env_file` is scoped per-service.
 
 CI (`.github/workflows/cicd.yml`) runs ESLint + Prettier for both workspaces on push/PR to `main`, then on success builds and pushes `client` and `server` Docker images to Docker Hub as `cloudcitycreations-client`/`cloudcitycreations-server`.

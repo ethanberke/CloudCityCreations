@@ -1,15 +1,14 @@
 import {
   Box,
   Button,
-  CardMedia,
   List,
   ListItem,
   ListItemText,
   Modal,
-  Paper,
   Stack,
   Typography,
 } from "@mui/material";
+import RecipeImage from "./RecipeImage";
 
 export default function SubmissionPreviewModal({
   open,
@@ -58,25 +57,10 @@ export default function SubmissionPreviewModal({
           </Typography>
         </Box>
 
-        <Paper elevation={8}>
-          <CardMedia
-            component="img"
-            image={recipe.image_url || "/images/grogu_peak.jpg"}
-            alt={recipe.recipe_name}
-            sx={{
-              width: "100%",
-              height: "auto",
-              maxHeight: 300,
-              objectFit: "cover",
-              borderRadius: 2,
-              my: 2,
-            }}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/images/grogu_peak.jpg";
-            }}
-          />
-        </Paper>
+        <RecipeImage
+          imageUrl={recipe.image_url}
+          alt={recipe.recipe_name || "Recipe preview"}
+        />
 
         <Typography>Ingredients</Typography>
         {ingredients.length > 0 ? (
