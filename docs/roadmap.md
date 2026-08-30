@@ -20,12 +20,11 @@ Epic/issue, not a commitment.
   a refetch. Still open: no client calls `PATCH` yet (#20), and neither route checks who is
   asking — any visitor can delete any recipe until Supabase Auth lands (#7).
 
-- **"My Recipes" page** (#19)
-  An owner-scoped view: the same tile grid filtered to your own contributions, with edit and
-  delete available there while `/` stays read-only. Blocked on identity, not on layout —
-  `contributor` is free text, so until Supabase Auth lands the plan is a `localStorage`
-  placeholder name, honest about being a local convenience rather than a login. Depends on
-  the `RecipeTile` refactor below.
+- **"My Recipes" page** (#19) — _done._
+  `/my-recipes` shows the tile grid filtered to your own contributions, and delete now lives
+  there instead of on the public landing grid. Identity is a `localStorage` name the
+  Contribute form remembers on submit — a per-device convenience, not a login, and not
+  access control: the API still has no ownership checks (#7). Edit is #20.
 
 - **Submission preview modal** — _done._
   Submitting the Contribute form opens `SubmissionPreviewModal.jsx` (name, style, contributor,

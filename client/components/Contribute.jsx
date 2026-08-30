@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { getContributorName, setContributorName } from "../utils/contributor";
 import SubmissionPreviewModal from "./SubmissionPreviewModal";
 
 const Contribute = ({ onRecipeSubmit }) => {
@@ -13,7 +14,7 @@ const Contribute = ({ onRecipeSubmit }) => {
   const redirectTimer = useRef(null);
 
   const [newRecipe, setNewRecipe] = useState({
-    contributor: "",
+    contributor: getContributorName(),
     recipe_name: "",
     style: "",
     image_url: "",
@@ -75,6 +76,8 @@ const Contribute = ({ onRecipeSubmit }) => {
 
     try {
       await onRecipeSubmit(previewRecipe);
+      // Remembered so My Recipes has a name to filter on until auth lands.
+      setContributorName(previewRecipe.contributor);
       setPreviewOpen(false);
       setNotice({
         severity: "success",

@@ -24,17 +24,8 @@ export default function Landing() {
         Your squad’s recipes, all in one place.
       </Typography>
 
-      {/* Owner actions stay on the public grid until #19 gives them a home on
-          the My Recipes page — otherwise delete would vanish from the app. */}
-      <RecipeTile
-        recipes={recipes}
-        showOwnerActions
-        onRecipeDeleted={(recipeId) =>
-          setRecipes((current) =>
-            current.filter((recipe) => recipe.recipe_id !== recipeId),
-          )
-        }
-      />
+      {/* Read-only on purpose: delete lives on My Recipes now. */}
+      <RecipeTile recipes={recipes} />
     </Box>
   );
 }
